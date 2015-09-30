@@ -1,0 +1,40 @@
+{
+  "max": {
+    "positive": false,
+    "obsolete": false,
+    "obscene": true,
+    "copyright": false,
+    "releaseDate": {
+      "date": {
+        "year": 2015,
+        "month": 9,
+        "day": 17
+      },
+      "time": {
+        "hour": 13,
+        "minute": 17,
+        "second": 8,
+        "nano": 624000000
+      }
+    }
+  },
+  "moritz": {
+    "positive": false,
+    "obsolete": false,
+    "obscene": true,
+    "copyright": false,
+    "releaseDate": {
+      "date": {
+        "year": 2015,
+        "month": 9,
+        "day": 17
+      },
+      "time": {
+        "hour": 13,
+        "minute": 17,
+        "second": 8,
+        "nano": 625000000
+      }
+    }
+  }
+}
