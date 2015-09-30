@@ -5,9 +5,8 @@
  */
 package de.loercher.rating.policy;
 
-import de.loercher.rating.feedback.Feedback;
+import de.loercher.rating.feedback.FeedbackController;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,14 +34,14 @@ public class Policy
     private static final Double OBSCENEPERCENTAGETHRESHOLD = 0.1;
     private static final Double COPYRIGHTPERCENTAGETHRESHOLD = 0.1;
 
-    private Feedback feedback;
+    private FeedbackController feedback;
 
-    public Feedback getFeedback()
+    public FeedbackController getFeedback()
     {
 	return feedback;
     }
 
-    public void setFeedback(Feedback feedback)
+    public void setFeedback(FeedbackController feedback)
     {
 	this.feedback = feedback;
     }
@@ -50,9 +49,9 @@ public class Policy
     @RequestMapping("/rating")
     public Double getRating()
     {
-	ZonedDateTime actualTime = ZonedDateTime.now();
+	ZonedDateTime currentTime = ZonedDateTime.now();
 
-	Duration timeDifference = Duration.between(feedback.getTimeOfPressEntry(), actualTime);
+	Duration timeDifference = Duration.between(feedback.getTimeOfPressEntry(), currentTime);
 
 	Double potency = (double) timeDifference.toMinutes() / 60;
 	log.info("Time difference between actual time and construction time (in hours): " + potency);

@@ -5,6 +5,10 @@
  */
 package de.loercher.rating.feedback;
 
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.google.gson.Gson;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -15,10 +19,14 @@ import org.apache.log4j.Logger;
  *
  * @author Jimmy
  */
-public class Feedback
+public class FeedbackController
 {
 
-    private static Logger log = Logger.getLogger(Feedback.class);
+    private static Logger log = Logger.getLogger(FeedbackController.class);
+
+    private AmazonDynamoDBClient client = new AmazonDynamoDBClient(new BasicAWSCredentials("AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"));
+    private DynamoDB dynamoDB;
+    private static DynamoDBMapper mapper;
 
     private TransactionalUpdate obsceneUpdate;
     private TransactionalUpdate positiveUpdate;
@@ -27,19 +35,18 @@ public class Feedback
 
     private final String articleId;
 
-//    private Integer positiveCounter = 0;
-//    private Integer obsoleteCounter = 0;
-//    private Integer obsceneCounter = 0;
-//    private Integer copyrightCounter = 0; 
-    
     private ZonedDateTime timeOfPressEntry;
 
-    private Map<String, FeedbackEntry> ratings = new HashMap<>();
+    private Map<String, FeedbackEntryDataModel> ratings = new HashMap<>();
 
-    public Feedback(ZonedDateTime time, String pArticleId)
+    public FeedbackController(ZonedDateTime time, String pArticleId)
     {
 	timeOfPressEntry = time;
 	articleId = pArticleId;
+
+	client.setEndpoint("http://localhost:8000");
+	dynamoDB = new DynamoDB(client);
+	mapper = new DynamoDBMapper(client);
     }
 
     public ZonedDateTime getTimeOfPressEntry()
@@ -54,11 +61,13 @@ public class Feedback
 
     public void addObsolete(boolean obsolete, String userID)
     {
-	FeedbackEntry rating = ratings.get(userID);
-	
+	FeedbackEntryDataModel rating = ratings.get(userID);
+
 	if (rating == null)
 	{
-	    rating = new FeedbackEntry(ZonedDateTime.now(), articleId, userID);
+	    rating = new FeedbackEntryDataModel(ZonedDateTime.now(), articleId, userID);
+	    mapper.save(rating);
+
 	    ratings.put(userID, rating);
 	}
 
@@ -68,44 +77,21 @@ public class Feedback
 
     public void addPositive(boolean positive, String userID)
     {
-//	FeedbackEntry rating;
-//	if (ratings.containsKey(userID))
-//	{
-//	    rating = ratings.get(userID);
-//	    boolean oldPositive = ratings.get(userID).getPositive();
-//
-//	    positiveCounter = updateCounterFromDuplicate(positiveCounter, oldPositive, positive);
-//	} else
-//	{
-//	    rating = addNewRatingToRatings(userID);
-//	    if (positive)
-//	    {
-//		positiveCounter++;
-//	    }
-//	}
-//
-//	rating.setPositive(positive);
+
     }
 
     public void addObscene(boolean obscene, String userID)
     {
-//	FeedbackEntry rating;
-//	if (ratings.containsKey(userID))
-//	{
-//	    rating = ratings.get(userID);
-//	    boolean oldObscene = rating.getObscene();
-//
-//	    obsceneCounter = updateCounterFromDuplicate(obsceneCounter, oldObscene, obscene);
-//	} else
-//	{
-//	    rating = addNewRatingToRatings(userID);
-//	    if (obscene)
-//	    {
-//		obsceneCounter++;
-//	    }
-//	}
-//
-//	rating.setObscene(obscene);
+	FeedbackEntryDataModel rating = ratings.get(userID);
+
+	if (rating == null)
+	{
+	    rating = new FeedbackEntryDataModel(ZonedDateTime.now(), articleId, userID);
+	    ratings.put(userID, rating);
+	}
+
+	obsceneUpdate = new TransactionalUpdate(articleId, "obsceneCounter", (a) -> a.getObscene(), (b, c) -> b.setObsolete(c));
+	obsceneUpdate.updateFlag(rating, obscene, ratings.size());
     }
 
     public void addCopyright(boolean copyright, String userID)
@@ -149,7 +135,7 @@ public class Feedback
 	return copyrightUpdate.getCounter();
     }
 
-    public void addRating(FeedbackEntry rating)
+    public void addRating(FeedbackEntryDataModel rating)
     {
 	String userID = rating.getUserID();
 
@@ -190,7 +176,6 @@ public class Feedback
 //
 //	return rating;
 //    }
-
     public String toJSON()
     {
 	Gson gson = new Gson();

@@ -14,7 +14,7 @@ import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
-import de.loercher.rating.feedback.Feedback;
+import de.loercher.rating.feedback.FeedbackController;
 import java.util.ArrayList;
 import org.apache.log4j.Logger;
 
@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 public class DynamoDBFactory
 {
 
-    private final static Logger log = Logger.getLogger(Feedback.class);
+    private final static Logger log = Logger.getLogger(FeedbackController.class);
 
     public static DynamoDB dynamoDB;
     public static AmazonDynamoDBClient client;

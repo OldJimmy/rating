@@ -6,8 +6,8 @@
 package de.loercher.rating.local.feedback;
 
 import com.google.gson.Gson;
-import de.loercher.rating.feedback.Feedback;
-import de.loercher.rating.feedback.FeedbackEntry;
+import de.loercher.rating.feedback.FeedbackController;
+import de.loercher.rating.feedback.FeedbackEntryDataModel;
 import de.loercher.rating.policy.Policy;
 import java.io.File;
 import java.io.IOException;
@@ -31,9 +31,9 @@ public class FeedbackTest
 {
 
     private Policy policy;
-    private Feedback rating;
+    private FeedbackController rating;
     private Double oldRate;
-    private FeedbackEntry firstRate;
+    private FeedbackEntryDataModel firstRate;
     private final String USER = "max";
     private final String OTHERUSER = "moritz";
 
@@ -55,12 +55,12 @@ public class FeedbackTest
     public void setUp()
     {
 	policy = new Policy();
-	rating = new Feedback(ZonedDateTime.now(), "42");
+	rating = new FeedbackController(ZonedDateTime.now(), "42");
 
 	policy.setFeedback(rating);
 	oldRate = policy.getRating();
 
-	firstRate = new FeedbackEntry(ZonedDateTime.now(), "83247", USER);
+	firstRate = new FeedbackEntryDataModel(ZonedDateTime.now(), "83247", USER);
     }
 
     @After
@@ -80,7 +80,7 @@ public class FeedbackTest
 	rating.addRating(firstRate);
 	Double ratingBefore = policy.getRating();
 
-	FeedbackEntry secondRate = new FeedbackEntry(ZonedDateTime.now(), "5511234", USER);
+	FeedbackEntryDataModel secondRate = new FeedbackEntryDataModel(ZonedDateTime.now(), "5511234", USER);
 	secondRate.setPositive();
 	rating.addRating(secondRate);
 
@@ -97,7 +97,7 @@ public class FeedbackTest
 	rating.addRating(firstRate);
 	Double ratingBefore = policy.getRating();
 
-	FeedbackEntry secondRate = new FeedbackEntry(ZonedDateTime.now(), "192784", USER);
+	FeedbackEntryDataModel secondRate = new FeedbackEntryDataModel(ZonedDateTime.now(), "192784", USER);
 	secondRate.setPositive(false);
 	rating.addRating(secondRate);
 

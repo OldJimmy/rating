@@ -9,7 +9,7 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import de.loercher.rating.feedback.Feedback;
+import de.loercher.rating.feedback.FeedbackController;
 import java.io.ByteArrayInputStream;
 
 /**
@@ -43,7 +43,7 @@ public class CachedAmazonClient
 //	server.stop();
     }
     
-    public Feedback loadFromBucket(String pBucketName)
+    public FeedbackController loadFromBucket(String pBucketName)
     {
 	return null;
     }

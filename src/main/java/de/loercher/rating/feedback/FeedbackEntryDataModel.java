@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
  * @author Jimmy
  */
 @DynamoDBTable(tableName = "FeedbackEntry")
-public class FeedbackEntry
+public class FeedbackEntryDataModel
 {
     public static final Integer MAXRATING = 5;
 
@@ -32,9 +32,9 @@ public class FeedbackEntry
     private Integer contentRating = null;
     private Integer styleRating = null;
     
-    public FeedbackEntry(){}
+    public FeedbackEntryDataModel(){}
 
-    public FeedbackEntry(ZonedDateTime date, String pArticleID, String pUserID) throws IllegalArgumentException
+    public FeedbackEntryDataModel(ZonedDateTime date, String pArticleID, String pUserID) throws IllegalArgumentException
     {
 	if ((date == null) || (pArticleID == null) || (pUserID == null))
 	    throw new IllegalArgumentException("Creation time, articleID and userID have to be set. ");
@@ -168,7 +168,7 @@ public class FeedbackEntry
 	{
 	    throw new IllegalArgumentException("Rating number smaller than minimum:" + rate);
 	}
-	if (rate > FeedbackEntry.MAXRATING)
+	if (rate > FeedbackEntryDataModel.MAXRATING)
 	{
 	    throw new IllegalArgumentException("Rating number greater than maximum:" + rate);
 	}

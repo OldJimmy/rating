@@ -5,7 +5,7 @@
  */
 package de.loercher.rating.local.feedback;
 
-import de.loercher.rating.feedback.FeedbackEntry;
+import de.loercher.rating.feedback.FeedbackEntryDataModel;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 public class FeedbackEntryTest
 {
 
-    private FeedbackEntry entry;
+    private FeedbackEntryDataModel entry;
 
     public FeedbackEntryTest()
     {
@@ -32,7 +32,7 @@ public class FeedbackEntryTest
     @Before
     public void setUp()
     {
-	entry = new FeedbackEntry(ZonedDateTime.of(LocalDateTime.of(2015, Month.MARCH, 11, 12, 42), ZoneId.systemDefault()), "2134", "elfrich");
+	entry = new FeedbackEntryDataModel(ZonedDateTime.of(LocalDateTime.of(2015, Month.MARCH, 11, 12, 42), ZoneId.systemDefault()), "2134", "elfrich");
 	entry.setCopyright();
 	entry.setObsolete();
     }
@@ -50,7 +50,7 @@ public class FeedbackEntryTest
 
 	try
 	{
-	    entry.setContentRating(FeedbackEntry.MAXRATING + 1);
+	    entry.setContentRating(FeedbackEntryDataModel.MAXRATING + 1);
 	    fail("ContentRating accepts rating bigger than its max ");
 	} catch (IllegalArgumentException e)
 	{
@@ -66,7 +66,7 @@ public class FeedbackEntryTest
 
 	try
 	{
-	    entry.setStyleRating(FeedbackEntry.MAXRATING + 1);
+	    entry.setStyleRating(FeedbackEntryDataModel.MAXRATING + 1);
 	    fail("StyleRating accepts rating bigger than its max ");
 	} catch (IllegalArgumentException e)
 	{

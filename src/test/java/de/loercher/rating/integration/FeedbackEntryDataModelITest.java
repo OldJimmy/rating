@@ -7,8 +7,9 @@ package de.loercher.rating.integration;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.document.Item;
-import de.loercher.rating.feedback.Feedback;
-import de.loercher.rating.feedback.FeedbackEntry;
+import com.amazonaws.services.dynamodbv2.document.Table;
+import de.loercher.rating.feedback.FeedbackController;
+import de.loercher.rating.feedback.FeedbackEntryDataModel;
 import de.loercher.rating.feedback.TransactionalUpdate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -24,14 +25,14 @@ import static org.junit.Assert.*;
  *
  * @author Jimmy
  */
-public class FeedbackEntryITest
+public class FeedbackEntryDataModelITest
 {
 
     private static DynamoDBMapper mapper;
     private final String articleId = "123562qdf14";
     private final String userId = "alfons";
 
-    public FeedbackEntryITest()
+    public FeedbackEntryDataModelITest()
     {}
 
     @BeforeClass
@@ -55,7 +56,7 @@ public class FeedbackEntryITest
     @After
     public void tearDown()
     {
-	//DynamoDBFactory.deleteTables();
+	DynamoDBFactory.deleteTables();
     }
 
     @Test
@@ -64,11 +65,11 @@ public class FeedbackEntryITest
 	LocalDateTime localTime = LocalDateTime.of(2000, 12, 01, 0, 0, 0, 0);
 	ZonedDateTime then = ZonedDateTime.of(localTime, ZoneId.of("Asia/Karachi"));
 
-	FeedbackEntry entry = new FeedbackEntry(then, articleId, userId);
+	FeedbackEntryDataModel entry = new FeedbackEntryDataModel(then, articleId, userId);
 
 	mapper.save(entry);
 
-	FeedbackEntry newEntry = mapper.load(FeedbackEntry.class, articleId, userId);
+	FeedbackEntryDataModel newEntry = mapper.load(FeedbackEntryDataModel.class, articleId, userId);
 	
 	ZonedDateTime time = newEntry.getReleaseDate();
 	LocalDateTime localNewEntryTime = time.toLocalDateTime();
@@ -87,7 +88,7 @@ public class FeedbackEntryITest
     {
 	ZonedDateTime now = ZonedDateTime.now();
 
-	FeedbackEntry entry = new FeedbackEntry(now, articleId, userId);
+	FeedbackEntryDataModel entry = new FeedbackEntryDataModel(now, articleId, userId);
 
 	entry.setObsolete();
 	entry.setContentRating(1);
@@ -95,33 +96,15 @@ public class FeedbackEntryITest
 	
 	mapper.save(entry);
 
-	FeedbackEntry neuesEntry = mapper.load(FeedbackEntry.class, articleId, userId);
+	FeedbackEntryDataModel neuesEntry = mapper.load(FeedbackEntryDataModel.class, articleId, userId);
 
 	assertFalse("Entry attribute obscene wasn't set yet. Should be false! ", neuesEntry.getObscene());
 
 	entry.setObscene();
 	mapper.save(entry);
 
-	neuesEntry = mapper.load(FeedbackEntry.class, "123562qdf14", "alfons");
+	neuesEntry = mapper.load(FeedbackEntryDataModel.class, "123562qdf14", "alfons");
 	assertTrue("Entry attribute obscene not overwritten as expected! ", neuesEntry.getObscene());
     }
     
-    @Test
-    public void testAtomicFeedbackUpdate()
-    {
-	
-	
-	ZonedDateTime now = ZonedDateTime.now();
-	
-	//Feedback feedback = new Feedback(now, articleId );
-	
-	FeedbackEntry entry = new FeedbackEntry(now, articleId, userId);
-
-	entry.setObsolete();
-	entry.setContentRating(1);
-	entry.setStyleRating(1);
-	
-	TransactionalUpdate obsoleteUpdate = new TransactionalUpdate(articleId, "obsoleteCounter", (a) -> a.getObsolete(), (b, c) -> b.setObsolete(c));
-	obsoleteUpdate.updateFlag(entry, true, 0);
-    }
 }
