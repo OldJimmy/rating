@@ -6,6 +6,8 @@
 package de.loercher.rating.integration;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -17,9 +19,10 @@ import org.junit.BeforeClass;
  */
 public class DBITest
 {
-    private static DynamoDBMapper mapper;
-    private final String articleId = "123562qdf14";
-    private final String userId = "alfons";
+    protected static DynamoDBMapper mapper;
+    protected final String articleId = DynamoDBFactory.TEST_ARTICLE_ID;
+    protected final String userId = DynamoDBFactory.TEST_USER_ID;
+    protected final ZonedDateTime time = ZonedDateTime.of(2000, 10, 3, 16, 10, 0, 0, ZoneId.of("Europe/Berlin"));
 
     @BeforeClass
     public static void setUpClass()
@@ -39,9 +42,5 @@ public class DBITest
 	DynamoDBFactory.createTables();
     }
 
-    @After
-    public void tearDown()
-    {
-	DynamoDBFactory.deleteTables();
-    }
+    
 }

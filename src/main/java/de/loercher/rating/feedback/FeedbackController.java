@@ -5,6 +5,8 @@
  */
 package de.loercher.rating.feedback;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -23,10 +25,13 @@ public class FeedbackController
 {
 
     private static Logger log = Logger.getLogger(FeedbackController.class);
+    private final static Integer MAX_ATTEMPTS = 5;
 
-    private AmazonDynamoDBClient client = new AmazonDynamoDBClient(new BasicAWSCredentials("AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"));
-    private DynamoDB dynamoDB;
-    private static DynamoDBMapper mapper;
+    private final AmazonDynamoDBClient client = new AmazonDynamoDBClient(new BasicAWSCredentials("AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"));
+    private final DynamoDB dynamoDB;
+    private final DynamoDBMapper mapper;
+
+    private FlagHandlerFactory factory;
 
     private TransactionalUpdate obsceneUpdate;
     private TransactionalUpdate positiveUpdate;
@@ -47,6 +52,8 @@ public class FeedbackController
 	client.setEndpoint("http://localhost:8000");
 	dynamoDB = new DynamoDB(client);
 	mapper = new DynamoDBMapper(client);
+
+	factory = new FlagHandlerFactory(new DynamoDBConnector());
     }
 
     public ZonedDateTime getTimeOfPressEntry()
@@ -61,18 +68,39 @@ public class FeedbackController
 
     public void addObsolete(boolean obsolete, String userID)
     {
-	FeedbackEntryDataModel rating = ratings.get(userID);
+    }
 
-	if (rating == null)
+    public void addPositive(boolean positive, String articleID, String userID)
+    {
+	Integer entryCounterUpdate = 0;
+
+	FeedbackEntryDataModel entry = mapper.load(FeedbackEntryDataModel.class, articleID, userID);
+	if (entry == null)
 	{
-	    rating = new FeedbackEntryDataModel(ZonedDateTime.now(), articleId, userID);
-	    mapper.save(rating);
-
-	    ratings.put(userID, rating);
+	    entry = new FeedbackEntryDataModel(ZonedDateTime.now(), articleID, userID);
+	    entryCounterUpdate = 1;
 	}
 
-	obsoleteUpdate = new TransactionalUpdate(articleId, "obsoleteCounter", (a) -> a.getObsolete(), (b, c) -> b.setObsolete(c));
-	obsoleteUpdate.updateFlag(rating, obsolete, ratings.size());
+	try
+	{
+	    RepeatedDynamoDBAction action = new RepeatedDynamoDBAction(mapper, (a) -> a.getPositive(), (c, b) -> c.setPositive(b));
+	    action.saveEntryConditionally(positive, entry, MAX_ATTEMPTS);
+	    
+	    boolean savedModel = action.getLastFlagValue();
+
+	    if (positive != savedModel)
+	    {
+		AtomicUpdate update = factory.createAtomicUpdate("positiveCounter", "size");
+
+		// (!positive, positive) because we excluded the case with two equal values before
+		update.updateCounter(articleId, entryCounterUpdate, new FeedbackHelper().calculateAddend(!positive, positive));
+	    }
+	    
+	} catch (AmazonServiceException e)
+	{
+	    log.error("Updating conditionally FeedbackEntry failed after " + MAX_ATTEMPTS + " attempts.", e);
+	}
+
     }
 
     public void addPositive(boolean positive, String userID)

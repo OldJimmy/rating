@@ -30,9 +30,6 @@ public class FeedbackDataModel
     private Integer wrongCategoryCounter = 0;
     private Integer wrongPlaceCounter = 0;
 
-    private Double contentRating = 0.0;
-    private Double styleRating = 0.0;
-
     private ZonedDateTime timeOfPressEntry;
 
     public FeedbackDataModel() {}
@@ -93,26 +90,6 @@ public class FeedbackDataModel
     public void setWrongPlaceCounter(Integer wrongPlaceCounter)
     {
 	this.wrongPlaceCounter = wrongPlaceCounter;
-    }
-
-    public Double getContentRating()
-    {
-	return contentRating;
-    }
-
-    public void setContentRating(Double contentRating)
-    {
-	this.contentRating = contentRating;
-    }
-
-    public Double getStyleRating()
-    {
-	return styleRating;
-    }
-
-    public void setStyleRating(Double styleRating)
-    {
-	this.styleRating = styleRating;
     }
 
     public Integer getPositiveCounter()

@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMarshalling;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBVersionAttribute;
 import com.google.gson.Gson;
 import java.time.ZonedDateTime;
 
@@ -18,6 +19,7 @@ import java.time.ZonedDateTime;
 @DynamoDBTable(tableName = "FeedbackEntry")
 public class FeedbackEntryDataModel
 {
+
     public static final Integer MAXRATING = 5;
 
     private String articleID;
@@ -32,20 +34,26 @@ public class FeedbackEntryDataModel
     private Integer contentRating = null;
     private Integer styleRating = null;
     
-    public FeedbackEntryDataModel(){}
+    private Long version;
+
+    public FeedbackEntryDataModel()
+    {
+    }
 
     public FeedbackEntryDataModel(ZonedDateTime date, String pArticleID, String pUserID) throws IllegalArgumentException
     {
 	if ((date == null) || (pArticleID == null) || (pUserID == null))
+	{
 	    throw new IllegalArgumentException("Creation time, articleID and userID have to be set. ");
-	
+	}
+
 	articleID = pArticleID;
 	userID = pUserID;
-	
+
 	releaseDate = date;
     }
 
-    @DynamoDBHashKey(attributeName="ArticleID")
+    @DynamoDBHashKey(attributeName = "ArticleID")
     public String getArticleID()
     {
 	return articleID;
@@ -55,7 +63,7 @@ public class FeedbackEntryDataModel
     {
 	this.articleID = ArticleID;
     }
-    
+
     @DynamoDBRangeKey(attributeName = "UserID")
     public String getUserID()
     {
@@ -127,7 +135,7 @@ public class FeedbackEntryDataModel
 	this.copyright = true;
     }
 
-    @DynamoDBMarshalling(marshallerClass = DateTimeConverter.class) 
+    @DynamoDBMarshalling(marshallerClass = DateTimeConverter.class)
     public ZonedDateTime getReleaseDate()
     {
 	return releaseDate;
@@ -162,6 +170,17 @@ public class FeedbackEntryDataModel
 	this.styleRating = styleRating;
     }
 
+    @DynamoDBVersionAttribute
+    public Long getVersion()
+    {
+	return version;
+    }
+
+    public void setVersion(Long version)
+    {
+	this.version = version;
+    }
+    
     private void throwIfOutOfBounds(Integer rate) throws IllegalArgumentException
     {
 	if (rate <= 0)
@@ -174,13 +193,4 @@ public class FeedbackEntryDataModel
 	}
     }
 
-    public String toJSON()
-    {
-	Gson gson = new Gson();
-
-	String json = gson.toJson(this);
-	System.out.println(json);
-
-	return json;
-    }
 }

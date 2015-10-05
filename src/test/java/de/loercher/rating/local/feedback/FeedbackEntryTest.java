@@ -73,9 +73,4 @@ public class FeedbackEntryTest
 	}
     }
 
-    @Test
-    public void testJSONCreation()
-    {
-	System.out.println(entry.toJSON());
-    }
 }
