@@ -18,7 +18,6 @@ import java.time.ZonedDateTime;
 @DynamoDBTable(tableName = "FeedbackEntry")
 public class FeedbackEntryDataModel implements Cloneable
 {
-
     public static final Integer MAXRATING = 5;
 
     private String articleID;
@@ -28,7 +27,8 @@ public class FeedbackEntryDataModel implements Cloneable
     private boolean obsolete = false;
     private boolean obscene = false;
     private boolean copyright = false;
-
+    private boolean wrong = false;
+    
     private ZonedDateTime releaseDate;
     private Integer contentRating = null;
     private Integer styleRating = null;
@@ -74,7 +74,7 @@ public class FeedbackEntryDataModel implements Cloneable
 	this.userID = userID;
     }
 
-    public Boolean getPositive()
+    public Boolean isPositive()
     {
 	return positive;
     }
@@ -89,7 +89,7 @@ public class FeedbackEntryDataModel implements Cloneable
 	this.positive = positive;
     }
 
-    public Boolean getObsolete()
+    public Boolean isObsolete()
     {
 	return obsolete;
     }
@@ -104,7 +104,7 @@ public class FeedbackEntryDataModel implements Cloneable
 	this.obsolete = obsolete;
     }
 
-    public Boolean getObscene()
+    public Boolean isObscene()
     {
 	return obscene;
     }
@@ -119,7 +119,7 @@ public class FeedbackEntryDataModel implements Cloneable
 	this.obscene = obscene;
     }
 
-    public Boolean getCopyright()
+    public Boolean isCopyright()
     {
 	return copyright;
     }
@@ -169,6 +169,21 @@ public class FeedbackEntryDataModel implements Cloneable
 	this.styleRating = styleRating;
     }
 
+    public Boolean isWrong()
+    {
+	return wrong;
+    }
+
+    public void setWrong(Boolean wrong)
+    {
+	this.wrong = wrong;
+    }
+    
+     public void setWrong()
+    {
+	this.wrong = true;
+    }
+
     @DynamoDBVersionAttribute
     public Long getVersion()
     {
@@ -188,6 +203,7 @@ public class FeedbackEntryDataModel implements Cloneable
 	newModel.setObsolete(obsolete);
 	newModel.setPositive(positive);
 	newModel.setVersion(version);
+	newModel.setWrong(wrong);
 	
 	if (styleRating != null) newModel.setStyleRating(styleRating);
 	if (contentRating != null) newModel.setContentRating(contentRating);

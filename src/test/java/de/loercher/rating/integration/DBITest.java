@@ -8,8 +8,6 @@ package de.loercher.rating.integration;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -19,10 +17,10 @@ import org.junit.BeforeClass;
  */
 public class DBITest
 {
-    protected static DynamoDBMapper mapper;
-    protected final String articleId = DynamoDBFactory.TEST_ARTICLE_ID;
-    protected final String userId = DynamoDBFactory.TEST_USER_ID;
-    protected final ZonedDateTime time = ZonedDateTime.of(2000, 10, 3, 16, 10, 0, 0, ZoneId.of("Europe/Berlin"));
+    public static DynamoDBMapper mapper;
+    public static final String articleId = DynamoDBFactory.TEST_ARTICLE_ID;
+    public static final String userId = DynamoDBFactory.TEST_USER_ID;
+    public static final ZonedDateTime time = ZonedDateTime.of(2000, 10, 3, 16, 10, 0, 0, ZoneId.of("Europe/Berlin"));
 
     @BeforeClass
     public static void setUpClass()
@@ -31,16 +29,9 @@ public class DBITest
 	mapper = new DynamoDBMapper(DynamoDBFactory.getClient());
     }
 
-    @AfterClass
-    public static void tearDownClass()
-    {
-    }
-
     @Before
     public void setUp()
     {
 	DynamoDBFactory.createTables();
     }
-
-    
 }

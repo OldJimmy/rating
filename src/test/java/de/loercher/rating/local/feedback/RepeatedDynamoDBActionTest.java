@@ -10,10 +10,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import de.loercher.rating.feedback.FeedbackEntryDataModel;
 import de.loercher.rating.feedback.RepeatedDynamoDBAction;
 import java.time.ZonedDateTime;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -30,20 +27,6 @@ public class RepeatedDynamoDBActionTest
     private FeedbackEntryDataModel positiveDummyModel;
     private FeedbackEntryDataModel positiveReturnDummyModel;
 
-    public RepeatedDynamoDBActionTest()
-    {
-    }
-
-    @BeforeClass
-    public static void setUpClass()
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass()
-    {
-    }
-
     @Before
     public void setUp()
     {
@@ -55,20 +38,15 @@ public class RepeatedDynamoDBActionTest
 	positiveReturnDummyModel.setCopyright(Boolean.TRUE);
     }
 
-    @After
-    public void tearDown()
-    {
-    }
-
     @Test
     public void testRepetition()
     {
 	doThrow(new AmazonServiceException("BLABLA")).when(mapper).save(dummyModel);
 	doThrow(new AmazonServiceException("BLABLA")).when(mapper).save(anyObject());
-	
+
 	when(mapper.load(dummyModel)).thenReturn(dummyModel);
 
-	RepeatedDynamoDBAction action = new RepeatedDynamoDBAction(mapper, (a) -> a.getCopyright(), (b, c) -> b.setCopyright(c));
+	RepeatedDynamoDBAction action = new RepeatedDynamoDBAction(mapper, (a) -> a.isCopyright(), (b, c) -> b.setCopyright(c));
 	try
 	{
 	    action.saveEntryConditionally(true, dummyModel, 1);
@@ -78,15 +56,15 @@ public class RepeatedDynamoDBActionTest
 	}
 
 	mapper = mock(DynamoDBMapper.class);
-	
+
 	doThrow(new AmazonServiceException("BLABLA")).when(mapper).save(dummyModel);
 	doThrow(new AmazonServiceException("BLABLA")).when(mapper).save(anyObject());
-	
+
 	when(mapper.load(dummyModel)).thenReturn(positiveReturnDummyModel);
 	when(mapper.load(positiveDummyModel)).thenReturn(positiveReturnDummyModel);
 	when(mapper.load(FeedbackEntryDataModel.class, dummyModel.getArticleID(), dummyModel.getUserID())).thenReturn(positiveReturnDummyModel.cloneEntry());
-	
-	RepeatedDynamoDBAction actionTwo = new RepeatedDynamoDBAction(mapper, (a) -> a.getCopyright(), (b, c) -> b.setCopyright(c));
+
+	RepeatedDynamoDBAction actionTwo = new RepeatedDynamoDBAction(mapper, (a) -> a.isCopyright(), (b, c) -> b.setCopyright(c));
 	try
 	{
 	    actionTwo.saveEntryConditionally(false, positiveDummyModel, 10);
@@ -96,4 +74,3 @@ public class RepeatedDynamoDBActionTest
 	}
     }
 }
-

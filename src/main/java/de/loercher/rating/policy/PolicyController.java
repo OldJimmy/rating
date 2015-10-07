@@ -6,9 +6,12 @@
 package de.loercher.rating.policy;
 
 import de.loercher.rating.feedback.FeedbackController;
+import de.loercher.rating.feedback.FeedbackDataModel;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jimmy
  */
 @RestController
-public class Policy
+public class PolicyController
 {
 
-    private static Logger log = Logger.getLogger(Policy.class);
+    private static final Logger log = Logger.getLogger(PolicyController.class);
 
     /*
      Example calculation: in 72 hours (3 days) the rating goes down 50% with the following parameters:
@@ -34,24 +37,24 @@ public class Policy
     private static final Double OBSCENEPERCENTAGETHRESHOLD = 0.1;
     private static final Double COPYRIGHTPERCENTAGETHRESHOLD = 0.1;
 
-    private FeedbackController feedback;
+    private final FeedbackController feedback;
 
-    public FeedbackController getFeedback()
+    @Autowired
+    public PolicyController(FeedbackController pFeedback)
     {
-	return feedback;
+	feedback = pFeedback;
     }
 
-    public void setFeedback(FeedbackController feedback)
+    // TODO: Should return HTTP status code 451 in the case the rating is not legit anymore
+    @RequestMapping(value = "/rating/{articleId}", produces = "application/json") 
+    public Double getRating(@PathVariable String articleId) throws InappropriateContentException
     {
-	this.feedback = feedback;
-    }
+	FeedbackDataModel model = feedback.getFeedback(articleId);
+	if (!isLegit(model)) throw new InappropriateContentException("Entry not appropriate to display");
 
-    @RequestMapping("/rating")
-    public Double getRating()
-    {
 	ZonedDateTime currentTime = ZonedDateTime.now();
 
-	Duration timeDifference = Duration.between(feedback.getTimeOfPressEntry(), currentTime);
+	Duration timeDifference = Duration.between(model.getTimeOfPressEntry(), currentTime);
 
 	Double potency = (double) timeDifference.toMinutes() / 60;
 	log.info("Time difference between actual time and construction time (in hours): " + potency);
@@ -62,27 +65,31 @@ public class Policy
 
 	Double factor = Math.pow(SINKINGFACTOR, potency);
 	log.info("Factor: " + factor);
+	
+	Integer effectivePositive = model.getPositiveCounter() - model.getWrongCounter();
 
-	return feedback.getPositiveCounter() * factor;
+	return effectivePositive * factor;
     }
 
-    public boolean isLegit()
+    private boolean isLegit(FeedbackDataModel model)
     {
-	Integer entryCount = feedback.getRatingCount();
+	Integer entryCount = model.getSize();
+	if (entryCount <= 0) return true;
+	Double doubledEntryCount = new Double(entryCount);
 
-	if ((feedback.getObsceneCounter() / entryCount) > OBSCENEPERCENTAGETHRESHOLD)
+	if ((model.getObsceneCounter() / doubledEntryCount) > OBSCENEPERCENTAGETHRESHOLD)
 	{
 	    log.info("Obscene threshold exceeded!");
 	    return false;
 	}
-	
-	if ((feedback.getObsoleteCounter() / entryCount) > OBSOLETEPERCENTAGETHRESHOLD)
+
+	if ((model.getObsoleteCounter() / doubledEntryCount) > OBSOLETEPERCENTAGETHRESHOLD)
 	{
 	    log.info("Obsolete threshold exceeded!");
 	    return false;
 	}
 
-	if ((feedback.getCopyrightCounter() / entryCount) > COPYRIGHTPERCENTAGETHRESHOLD)
+	if ((model.getCopyrightCounter() / doubledEntryCount) > COPYRIGHTPERCENTAGETHRESHOLD)
 	{
 	    log.info("Copyright threshold exceeded!");
 	    return false;

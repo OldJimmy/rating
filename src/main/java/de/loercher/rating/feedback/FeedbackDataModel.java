@@ -17,6 +17,16 @@ import java.time.ZonedDateTime;
 @DynamoDBTable(tableName = "Feedback")
 public class FeedbackDataModel
 {
+    public static final String POSITIVE_COUNTER_NAME = "positiveCounter";
+    public static final String COPYRIGHT_COUNTER_NAME = "copyrightCounter";
+    public static final String OBSCENE_COUNTER_NAME = "obsceneCounter";
+    public static final String OBSOLETE_COUNTER_NAME = "obsoleteCounter";
+    public static final String WRONG_COUNTER_NAME = "falseCounter";
+    
+    public static final String WRONG_CATEGORY_COUNTER_NAME = "wrongCategoryCounter";
+    public static final String WRONG_PLACE_COUNTER_NAME = "wrongPlaceCounter";
+    
+    public static final String SIZE_NAME = "size";
 
     private String articleID;
 
@@ -26,21 +36,24 @@ public class FeedbackDataModel
     private Integer obsoleteCounter = 0;
     private Integer obsceneCounter = 0;
     private Integer copyrightCounter = 0;
+    private Integer wrongCounter = 0;
 
     private Integer wrongCategoryCounter = 0;
     private Integer wrongPlaceCounter = 0;
 
     private ZonedDateTime timeOfPressEntry;
 
-    public FeedbackDataModel() {}
-    
+    public FeedbackDataModel()
+    {
+    }
+
     public FeedbackDataModel(String pArticleID, ZonedDateTime pTimeOfPressEntry)
     {
 	timeOfPressEntry = pTimeOfPressEntry;
 	articleID = pArticleID;
     }
 
-    @DynamoDBHashKey(attributeName="ArticleID")
+    @DynamoDBHashKey(attributeName = "ArticleID")
     public String getArticleID()
     {
 	return articleID;
@@ -51,7 +64,7 @@ public class FeedbackDataModel
 	this.articleID = articleID;
     }
 
-    @DynamoDBMarshalling(marshallerClass = DateTimeConverter.class) 
+    @DynamoDBMarshalling(marshallerClass = DateTimeConverter.class)
     public ZonedDateTime getTimeOfPressEntry()
     {
 	return timeOfPressEntry;
@@ -130,5 +143,15 @@ public class FeedbackDataModel
     public void setCopyrightCounter(Integer copyrightCounter)
     {
 	this.copyrightCounter = copyrightCounter;
+    }
+    
+     public Integer getWrongCounter()
+    {
+	return wrongCounter;
+    }
+
+    public void setWrongCounter(Integer falseCounter)
+    {
+	this.wrongCounter = falseCounter;
     }
 }

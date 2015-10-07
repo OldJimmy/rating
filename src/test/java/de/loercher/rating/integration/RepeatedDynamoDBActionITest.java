@@ -52,7 +52,7 @@ public class RepeatedDynamoDBActionITest extends DBITest
 	newFeedback.setCopyright();
 	mapper.save(newFeedback);
 
-	action = new RepeatedDynamoDBAction(mapper, (a) -> a.getPositive(), (b, c) -> b.setPositive(c));
+	action = new RepeatedDynamoDBAction(mapper, (a) -> a.isPositive(), (b, c) -> b.setPositive(c));
 
 	try
 	{
@@ -63,7 +63,7 @@ public class RepeatedDynamoDBActionITest extends DBITest
 	}
 	
 	newFeedback = mapper.load(FeedbackEntryDataModel.class, articleId, userId);
-	assertTrue("FeedbackEntry should have been updated!", newFeedback.getPositive());
+	assertTrue("FeedbackEntry should have been updated!", newFeedback.isPositive());
     }
     
     @Test
@@ -81,7 +81,7 @@ public class RepeatedDynamoDBActionITest extends DBITest
 	newFeedback.setCopyright();
 	mapper.save(newFeedback);
 
-	action = new RepeatedDynamoDBAction(mapper, (a) -> a.getPositive(), (b, c) -> b.setPositive(c));
+	action = new RepeatedDynamoDBAction(mapper, (a) -> a.isPositive(), (b, c) -> b.setPositive(c));
 
 	try
 	{
@@ -92,6 +92,6 @@ public class RepeatedDynamoDBActionITest extends DBITest
 	}
 	
 	newFeedback = mapper.load(FeedbackEntryDataModel.class, articleId, userId);
-	assertTrue("FeedbackEntry should have been updated!", !newFeedback.getPositive());
+	assertTrue("FeedbackEntry should have been updated!", !newFeedback.isPositive());
     }
 }

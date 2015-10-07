@@ -6,11 +6,7 @@
 package de.loercher.rating.integration;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.Table;
-import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackEntryDataModel;
-import de.loercher.rating.feedback.TransactionalUpdate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -98,13 +94,13 @@ public class FeedbackEntryDataModelITest
 
 	FeedbackEntryDataModel neuesEntry = mapper.load(FeedbackEntryDataModel.class, articleId, userId);
 
-	assertFalse("Entry attribute obscene wasn't set yet. Should be false! ", neuesEntry.getObscene());
+	assertFalse("Entry attribute obscene wasn't set yet. Should be false! ", neuesEntry.isObscene());
 
 	entry.setObscene();
 	mapper.save(entry);
 
 	neuesEntry = mapper.load(FeedbackEntryDataModel.class, "123562qdf14", "alfons");
-	assertTrue("Entry attribute obscene not overwritten as expected! ", neuesEntry.getObscene());
+	assertTrue("Entry attribute obscene not overwritten as expected! ", neuesEntry.isObscene());
     }
     
 }
