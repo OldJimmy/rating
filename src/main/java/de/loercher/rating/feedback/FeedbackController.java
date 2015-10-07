@@ -5,7 +5,6 @@
  */
 package de.loercher.rating.feedback;
 
-import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
@@ -15,6 +14,8 @@ import com.google.gson.Gson;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import org.apache.log4j.Logger;
 
 /**
@@ -72,8 +73,43 @@ public class FeedbackController
 
     public void addPositive(boolean positive, String articleID, String userID)
     {
-	Integer entryCounterUpdate = 0;
+	AtomicUpdate update = factory.createAtomicUpdate("positiveCounter", "size");
+	addFlag(articleID, userID, positive, update,(a) -> a.getPositive(), (c, b) -> c.setPositive(b));
+    }
+    
+    public void addObsolete(boolean obsolete, String articleID, String userID)
+    {
+	AtomicUpdate update = factory.createAtomicUpdate("obsoleteCounter", "size");
+	addFlag(articleID, userID, obsolete, update,(a) -> a.getObsolete(), (c, b) -> c.setObsolete(b));
+    }
+    
+    public void addObscene(boolean obscene, String articleID, String userID)
+    {
+	AtomicUpdate update = factory.createAtomicUpdate("obsceneCounter", "size");
+	addFlag(articleID, userID, obscene, update,(a) -> a.getObscene(), (c, b) -> c.setObscene(b));
+    }
+    
+    public void addCopyright(boolean copyright, String articleID, String userID)
+    {
+	AtomicUpdate update = factory.createAtomicUpdate("copyrightCounter", "size");
+	addFlag(articleID, userID, copyright, update, (a) -> a.getCopyright(), (c, b) -> c.setCopyright(b));
+    }
+    
+    public FeedbackDataModel getFeedback(String articleID)
+    {
+	return mapper.load(FeedbackDataModel.class, articleID);
+    }
 
+    private void addFlag(String articleID, String userID, boolean copyright, AtomicUpdate update, Function<FeedbackEntryDataModel, Boolean> pGetter, BiConsumer<FeedbackEntryDataModel, Boolean> pSetter) throws IllegalArgumentException
+    {
+	RepeatedDynamoDBAction action = new RepeatedDynamoDBAction(mapper, (a) -> a.getCopyright(), (c, b) -> c.setCopyright(b));
+	updateDatabaseWithFlag(articleID, userID, action, copyright, update);
+    }
+
+    private void updateDatabaseWithFlag(String articleID, String userID, RepeatedDynamoDBAction action, boolean flag, AtomicUpdate update) throws IllegalArgumentException
+    {
+	Integer entryCounterUpdate = 0;
+	
 	FeedbackEntryDataModel entry = mapper.load(FeedbackEntryDataModel.class, articleID, userID);
 	if (entry == null)
 	{
@@ -83,24 +119,19 @@ public class FeedbackController
 
 	try
 	{
-	    RepeatedDynamoDBAction action = new RepeatedDynamoDBAction(mapper, (a) -> a.getPositive(), (c, b) -> c.setPositive(b));
-	    action.saveEntryConditionally(positive, entry, MAX_ATTEMPTS);
-	    
+	    action.saveEntryConditionally(flag, entry, MAX_ATTEMPTS);
+
 	    boolean savedModel = action.getLastFlagValue();
 
-	    if (positive != savedModel)
+	    if (flag != savedModel)
 	    {
-		AtomicUpdate update = factory.createAtomicUpdate("positiveCounter", "size");
-
-		// (!positive, positive) because we excluded the case with two equal values before
-		update.updateCounter(articleId, entryCounterUpdate, new FeedbackHelper().calculateAddend(!positive, positive));
+		update.updateCounter(articleId, entryCounterUpdate, new FeedbackHelper().calculateAddend(!flag, flag));
 	    }
-	    
+
 	} catch (AmazonServiceException e)
 	{
 	    log.error("Updating conditionally FeedbackEntry failed after " + MAX_ATTEMPTS + " attempts.", e);
 	}
-
     }
 
     public void addPositive(boolean positive, String userID)

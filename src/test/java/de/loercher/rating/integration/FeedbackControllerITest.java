@@ -9,6 +9,8 @@ import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackDataModel;
 import de.loercher.rating.feedback.FeedbackEntryDataModel;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +49,7 @@ public class FeedbackControllerITest extends DBITest
 	mapper.save(model);
 	
 	FeedbackDataModel feedback = mapper.load(FeedbackDataModel.class, articleId);
-	assertTrue(feedback.getObsoleteCounter() == 0);
+	assertTrue(feedback.getPositiveCounter() == 0);
 	
 	controller.addPositive(true, articleId, userId);
 	
@@ -63,6 +65,41 @@ public class FeedbackControllerITest extends DBITest
 	
 	feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue("Positive Counter must not be updated more than once foreach user! ( " + feedback.getPositiveCounter() + " )" , feedback.getPositiveCounter() == 1);
+	
+	String newUser = "abc";
+	controller.addPositive(true, articleId, newUser);
+	
+	feedback = mapper.load(FeedbackDataModel.class, articleId);
+	assertTrue("Positive Counter has to be 2 now!", feedback.getPositiveCounter() == 2);
+	
+	assertNotNull(mapper.load(FeedbackEntryDataModel.class, articleId, newUser));
+    }
+    
+    @Test
+    public void testAddDifferentFlags() throws Exception
+    {
+	FeedbackEntryDataModel model = new FeedbackEntryDataModel(time, articleId, userId);
+	mapper.save(model);
+	
+	FeedbackDataModel feedback = mapper.load(FeedbackDataModel.class, articleId);
+	assertTrue(feedback.getPositiveCounter()== 0);
+	
+	controller.addPositive(false, articleId, userId);
+	
+	feedback = mapper.load(FeedbackDataModel.class, articleId);
+	assertTrue("Positive Counter must not have been updated!", feedback.getPositiveCounter() == 0);
+	
+	controller.addPositive(true, articleId, userId);
+	controller.addPositive(false, articleId, userId);
+	controller.addPositive(true, articleId, userId);
+	
+	controller.addPositive(false, articleId, userId);
+	controller.addPositive(false, articleId, userId);
+	
+	feedback = mapper.load(FeedbackDataModel.class, articleId);
+	assertTrue("Positive Counter must be back to 0! ( " + feedback.getPositiveCounter() + " )" , feedback.getPositiveCounter() == 0);
+	
+	assertFalse("The flag must be set to false after all!", mapper.load(FeedbackEntryDataModel.class, articleId, userId).getPositive());
     }
     
 }

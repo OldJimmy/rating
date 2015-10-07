@@ -11,6 +11,7 @@ import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 
 /**
  *
@@ -22,7 +23,9 @@ public class AtomicUpdate
     private final String counterName;
     private final String sizeAttribute; 
     private final String tableName;
-
+    
+    private UpdateItemOutcome outcome;
+    
     public AtomicUpdate(DynamoDBConnector pDynamoDB, String pCounterName, String pSizeAttribute, String pTableName)
     {
 	dynamoDB = pDynamoDB.getDynamoDB();
@@ -31,7 +34,7 @@ public class AtomicUpdate
 	tableName = pTableName;
     }
 
-    public UpdateItemOutcome updateCounter(String articleId, Integer entryCounterUpdate, Integer counterUpdate)
+    public void updateCounter(String articleId, Integer entryCounterUpdate, Integer counterUpdate)
     {
 	Table table = dynamoDB.getTable(tableName);
 
@@ -41,9 +44,15 @@ public class AtomicUpdate
 		.withNameMap(new NameMap().with("#field", counterName).with("#counter", sizeAttribute))
 		.withValueMap(new ValueMap()
 			.withNumber(":newcounter", entryCounterUpdate)
-			.withNumber(":one", counterUpdate));
+			.withNumber(":one", counterUpdate))
+		.withReturnValues(ReturnValue.ALL_NEW);
 
-	return table.updateItem(spec);
+	outcome = table.updateItem(spec);
+    }
+
+    public UpdateItemOutcome getOutcome()
+    {
+	return outcome;
     }
 
 }

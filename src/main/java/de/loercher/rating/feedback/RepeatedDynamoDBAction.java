@@ -10,6 +10,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+
 /**
  *
  * @author Jimmy
@@ -39,11 +40,12 @@ public class RepeatedDynamoDBAction
 	    return;
 	}
 
-	setter.accept(pEntry, newFlag);
+	FeedbackEntryDataModel tempEntry = pEntry.cloneEntry();
+	setter.accept(tempEntry, newFlag);
 
 	try
 	{
-	    mapper.save(pEntry);
+	    mapper.save(tempEntry);
 	} catch (AmazonServiceException e)
 	{
 	    if (attempts == 1)
@@ -51,7 +53,7 @@ public class RepeatedDynamoDBAction
 		throw e;
 	    } else
 	    {
-		FeedbackEntryDataModel entry = mapper.load(pEntry);
+		FeedbackEntryDataModel entry = mapper.load(FeedbackEntryDataModel.class, pEntry.getArticleID(), pEntry.getUserID());
 		saveEntryConditionally(newFlag, entry, attempts - 1);
 	    }
 	}

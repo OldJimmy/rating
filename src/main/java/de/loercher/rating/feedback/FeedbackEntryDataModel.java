@@ -10,14 +10,13 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMarshalling;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBVersionAttribute;
-import com.google.gson.Gson;
 import java.time.ZonedDateTime;
 
 /**
  * @author Jimmy
  */
 @DynamoDBTable(tableName = "FeedbackEntry")
-public class FeedbackEntryDataModel
+public class FeedbackEntryDataModel implements Cloneable
 {
 
     public static final Integer MAXRATING = 5;
@@ -179,6 +178,21 @@ public class FeedbackEntryDataModel
     public void setVersion(Long version)
     {
 	this.version = version;
+    }
+    
+    public FeedbackEntryDataModel cloneEntry()
+    {
+	FeedbackEntryDataModel newModel = new FeedbackEntryDataModel(releaseDate, articleID, userID);
+	newModel.setCopyright(copyright);
+	newModel.setObscene(obscene);
+	newModel.setObsolete(obsolete);
+	newModel.setPositive(positive);
+	newModel.setVersion(version);
+	
+	if (styleRating != null) newModel.setStyleRating(styleRating);
+	if (contentRating != null) newModel.setContentRating(contentRating);
+	
+	return newModel;
     }
     
     private void throwIfOutOfBounds(Integer rate) throws IllegalArgumentException

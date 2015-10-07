@@ -9,7 +9,6 @@ import de.loercher.rating.feedback.AtomicUpdate;
 import de.loercher.rating.feedback.DynamoDBConnector;
 import org.junit.After;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -17,8 +16,6 @@ import static org.junit.Assert.*;
  */
 public class AtomicUpdateITest extends DBITest
 {
-    
-    private static String TABLENAME = "Feedback";
     
     public AtomicUpdateITest()
     {
@@ -28,22 +25,20 @@ public class AtomicUpdateITest extends DBITest
     @After
     public void tearDown()
     {
-	//DynamoDBFactory.deleteTables();
+	DynamoDBFactory.deleteTables();
     }
 
     /**
      * Test of updateCounter method, of class AtomicUpdate.
      */
     @Test
-    public void testUpdateCounter() throws Exception
+    public void testUpdateCounter()
     {
-	String articleId = DynamoDBFactory.TEST_ARTICLE_ID;
 	Integer entryCounter = 1;
 	Integer counterUpdate = 2;
 	AtomicUpdate instance;
 	instance = new AtomicUpdate(new DynamoDBConnector(), "obsoleteCounter", "size", "Feedback");
 	instance.updateCounter(articleId, entryCounter, counterUpdate);
-	
     }
     
 }

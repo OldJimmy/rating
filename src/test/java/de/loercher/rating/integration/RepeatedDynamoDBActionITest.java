@@ -6,7 +6,6 @@
 package de.loercher.rating.integration;
 
 import com.amazonaws.AmazonServiceException;
-import de.loercher.rating.feedback.FeedbackDataModel;
 import de.loercher.rating.feedback.FeedbackEntryDataModel;
 import de.loercher.rating.feedback.RepeatedDynamoDBAction;
 import static de.loercher.rating.integration.DBITest.mapper;
@@ -14,14 +13,13 @@ import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
 import java.time.ZonedDateTime;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
  *
  * @author Jimmy
  */
-public class RepeatedDynamoDBActionTest extends DBITest
+public class RepeatedDynamoDBActionITest extends DBITest
 {
 
     private RepeatedDynamoDBAction action;
