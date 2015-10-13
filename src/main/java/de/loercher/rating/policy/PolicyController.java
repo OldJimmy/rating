@@ -11,8 +11,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackDataModel;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.log4j.Logger;
@@ -74,7 +76,13 @@ public class PolicyController
 	} catch (ResourceNotFoundException ex)
 	{
 	    log.warn("Rating entry with the articleId " + articleId + " not existing!", ex);
-	    return new ResponseEntity<>("{}", HttpStatus.NOT_FOUND);
+	    
+	    Timestamp now = new Timestamp(new Date().getTime());
+	    result.put("timestamp", now);
+	    result.put("status", 404);
+	    result.put("error", "Not Found");
+	    
+	    return new ResponseEntity<>(mapper.writeValueAsString(result), HttpStatus.NOT_FOUND);
 	} catch (InappropriateContentException ex)
 	{
 	    log.warn("Entry with the articleId " + articleId + " isn't appropriate!", ex);

@@ -7,20 +7,29 @@ package de.loercher.rating.feedback;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.policy.internal.JsonDocumentFields;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import de.loercher.rating.feedback.dto.PositivePostDTO;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
  * @author Jimmy
  */
-@Component
+@RestController
+@RequestMapping("localpress/")
 public class FeedbackController
 {
 
@@ -45,7 +54,14 @@ public class FeedbackController
     {
 	return mapper.load(FeedbackDataModel.class, articleID);
     }
-
+    
+    @RequestMapping(value = "/{articleId}/positive", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public void addPositive(@RequestBody PositivePostDTO positive)
+    {
+	addPositive(positive.isPositive(), positive.getArticleID(), positive.getUserID());
+    }
+	    
+	    
     public void addPositive(boolean positive, String articleID, String userID)
     {
 	AtomicUpdate update = factory.createAtomicUpdate("positiveCounter", "size");
