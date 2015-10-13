@@ -30,6 +30,17 @@
             <artifactId>aws-java-sdk</artifactId>
             <version>1.10.20</version>
         </dependency>
+        <dependency>
+            <groupId>org.jasypt</groupId>
+            <artifactId>jasypt</artifactId>
+            <version>1.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.52</version>
+        </dependency>
+
         
         <!-- Test Dependencies -->
         <dependency>

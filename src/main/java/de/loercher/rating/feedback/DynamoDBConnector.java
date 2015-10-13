@@ -6,33 +6,51 @@
 package de.loercher.rating.feedback;
 
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import de.loercher.rating.commons.RatingProperties;
+import java.io.IOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Jimmy
  */
+@Component
 public class DynamoDBConnector
 {
-    private final AmazonDynamoDBClient client = new AmazonDynamoDBClient(new BasicAWSCredentials("AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"));
+    private final String ACCESS_KEY_NAME = "amazonAccessKey";
+    private final String SECRET_KEY_NAME = "amazonSecretKey";
+    private final String URL_NAME = "url";
+
+    private final RatingProperties ratingProperties;
+
+    private final AmazonDynamoDB client;
     private final DynamoDB dynamoDB;
-    
-    public DynamoDBConnector()
+
+    @Autowired
+    public DynamoDBConnector(RatingProperties properties) throws IOException
     {
-	client.setEndpoint("http://localhost:8000");
+	ratingProperties = properties;
+
+	String accessKey = ratingProperties.getProp().getProperty(ACCESS_KEY_NAME);
+	String secretKey = ratingProperties.getProp().getProperty(SECRET_KEY_NAME);
+	client = new AmazonDynamoDBClient(new BasicAWSCredentials(accessKey, secretKey));
+	
+	client.setEndpoint(ratingProperties.getProp().getProperty(URL_NAME));
 	dynamoDB = new DynamoDB(client);
     }
-    
+
     public DynamoDB getDynamoDB()
     {
 	return dynamoDB;
     }
-    
-    public AmazonDynamoDBClient getClient()
+
+    public AmazonDynamoDB getClient()
     {
 	return client;
     }
-    
-    
+
 }

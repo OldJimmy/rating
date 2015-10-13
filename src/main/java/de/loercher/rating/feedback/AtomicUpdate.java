@@ -40,11 +40,11 @@ public class AtomicUpdate
     {
 	Table table = dynamoDB.getTable(tableName);
 
-	Item item = table.getItem("ArticleID", articleId);
+	Item item = table.getItem(FeedbackDataModel.KEY_NAME, articleId);
 	if (item == null)
 	{
 	    item = new Item()
-		    .withPrimaryKey("ArticleID", articleId)
+		    .withPrimaryKey(FeedbackDataModel.KEY_NAME, articleId)
 		    .withNumber(FeedbackDataModel.POSITIVE_COUNTER_NAME, 0)
 		    .withNumber(FeedbackDataModel.COPYRIGHT_COUNTER_NAME, 0)
 		    .withNumber(FeedbackDataModel.OBSCENE_COUNTER_NAME, 0)
@@ -58,7 +58,7 @@ public class AtomicUpdate
 	}
 
 	UpdateItemSpec spec = new UpdateItemSpec()
-		.withPrimaryKey("ArticleID", articleId)
+		.withPrimaryKey(FeedbackDataModel.KEY_NAME, articleId)
 		.withUpdateExpression("set #field = #field + :one, #counter = #counter + :newcounter")
 		.withNameMap(new NameMap().with("#field", counterName).with("#counter", sizeAttribute))
 		.withValueMap(new ValueMap()

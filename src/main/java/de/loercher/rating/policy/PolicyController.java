@@ -5,14 +5,24 @@
  */
 package de.loercher.rating.policy;
 
+import de.loercher.rating.commons.InappropriateContentException;
+import de.loercher.rating.commons.ResourceNotFoundException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackDataModel;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -20,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jimmy
  */
 @RestController
+@RequestMapping("localpress/")
 public class PolicyController
 {
 
@@ -38,19 +49,53 @@ public class PolicyController
     private static final Double COPYRIGHTPERCENTAGETHRESHOLD = 0.1;
 
     private final FeedbackController feedback;
+    private final ObjectMapper mapper;
 
     @Autowired
-    public PolicyController(FeedbackController pFeedback)
+    public PolicyController(FeedbackController pFeedback, ObjectMapper pMapper)
     {
 	feedback = pFeedback;
+	mapper = pMapper;
     }
 
-    // TODO: Should return HTTP status code 451 in the case the rating is not legit anymore
-    @RequestMapping(value = "/rating/{articleId}", produces = "application/json") 
-    public Double getRating(@PathVariable String articleId) throws InappropriateContentException
+    @RequestMapping(value = "/{articleId}/rating", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getRating(@PathVariable String articleId) throws JsonProcessingException
     {
-	FeedbackDataModel model = feedback.getFeedback(articleId);
-	if (!isLegit(model)) throw new InappropriateContentException("Entry not appropriate to display");
+	Map<String, Object> result = new HashMap<>();
+	result.put("articleID", articleId);
+	try
+	{
+	    Double rating = calculateRating(articleId);
+
+	    result.put("appropriate", true);
+	    result.put("rating", rating);
+
+	    return new ResponseEntity<>(mapper.writeValueAsString(result), HttpStatus.OK);
+	} catch (ResourceNotFoundException ex)
+	{
+	    log.warn("Rating entry with the articleId " + articleId + " not existing!", ex);
+	    return new ResponseEntity<>("{}", HttpStatus.NOT_FOUND);
+	} catch (InappropriateContentException ex)
+	{
+	    log.warn("Entry with the articleId " + articleId + " isn't appropriate!", ex);
+
+	    result.put("appropriate", false);
+	    return new ResponseEntity<>(mapper.writeValueAsString(result), HttpStatus.OK);
+	}
+    }
+
+    public Double calculateRating(String articleID) throws InappropriateContentException, ResourceNotFoundException
+    {
+	FeedbackDataModel model = feedback.getFeedback(articleID);
+	if (model == null)
+	{
+	    throw new ResourceNotFoundException("Entry with the articleId " + articleID + " not existing!");
+	}
+
+	if (!isLegit(model))
+	{
+	    throw new InappropriateContentException("Entry not appropriate to display");
+	}
 
 	ZonedDateTime currentTime = ZonedDateTime.now();
 
@@ -65,7 +110,9 @@ public class PolicyController
 
 	Double factor = Math.pow(SINKINGFACTOR, potency);
 	log.info("Factor: " + factor);
-	
+
+	// Wrongness is classified as opposite to positive. 
+	// This is not correct in reality but appropriate for the rating algorithm.
 	Integer effectivePositive = model.getPositiveCounter() - model.getWrongCounter();
 
 	return effectivePositive * factor;
@@ -74,27 +121,33 @@ public class PolicyController
     private boolean isLegit(FeedbackDataModel model)
     {
 	Integer entryCount = model.getSize();
-	if (entryCount <= 0) return true;
+	String articleID = model.getArticleID();
+
+	if (entryCount <= 0)
+	{
+	    return true;
+	}
+
 	Double doubledEntryCount = new Double(entryCount);
 
 	if ((model.getObsceneCounter() / doubledEntryCount) > OBSCENEPERCENTAGETHRESHOLD)
 	{
-	    log.info("Obscene threshold exceeded!");
-	    return false;
-	}
-
-	if ((model.getObsoleteCounter() / doubledEntryCount) > OBSOLETEPERCENTAGETHRESHOLD)
-	{
-	    log.info("Obsolete threshold exceeded!");
+	    log.info("Obscene threshold exceeded for Article: " + articleID + " (" + model.getObsceneCounter() + ")");
 	    return false;
 	}
 
 	if ((model.getCopyrightCounter() / doubledEntryCount) > COPYRIGHTPERCENTAGETHRESHOLD)
 	{
-	    log.info("Copyright threshold exceeded!");
+	    log.info("Copyright threshold exceeded for Article: " + articleID + " (" + model.getCopyrightCounter() + ")");
 	    return false;
-
 	}
+
+	if ((model.getObsoleteCounter() / doubledEntryCount) > OBSOLETEPERCENTAGETHRESHOLD)
+	{
+	    log.info("Obsolete threshold exceeded for Article: " + articleID + " (" + model.getObsoleteCounter() + ")");
+	    return false;
+	}
+
 	return true;
     }
 

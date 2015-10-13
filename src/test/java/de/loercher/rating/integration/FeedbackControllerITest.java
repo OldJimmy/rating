@@ -5,9 +5,15 @@
  */
 package de.loercher.rating.integration;
 
+import de.loercher.rating.commons.RatingProperties;
+import de.loercher.rating.commons.SecurityHelper;
+import de.loercher.rating.feedback.DynamoDBConnector;
 import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackDataModel;
 import de.loercher.rating.feedback.FeedbackEntryDataModel;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -34,7 +40,13 @@ public class FeedbackControllerITest extends DBITest
     public void setUp()
     {
 	super.setUp();
-	controller = new FeedbackController();
+	try
+	{
+	    controller = new FeedbackController(new DynamoDBConnector(new RatingProperties(new SecurityHelper())));
+	} catch (IOException ex)
+	{
+	    Logger.getLogger(FeedbackControllerITest.class.getName()).log(Level.SEVERE, null, ex);
+	}
     }
     
     @After

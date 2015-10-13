@@ -5,8 +5,11 @@
  */
 package de.loercher.rating.integration;
 
+import de.loercher.rating.commons.RatingProperties;
+import de.loercher.rating.commons.SecurityHelper;
 import de.loercher.rating.feedback.AtomicUpdate;
 import de.loercher.rating.feedback.DynamoDBConnector;
+import java.io.IOException;
 import org.junit.After;
 import org.junit.Test;
 
@@ -30,14 +33,15 @@ public class AtomicUpdateITest extends DBITest
 
     /**
      * Test of updateCounter method, of class AtomicUpdate.
+     * @throws java.io.IOException
      */
     @Test
-    public void testUpdateCounter()
+    public void testUpdateCounter() throws IOException
     {
 	Integer entryCounter = 1;
 	Integer counterUpdate = 2;
 	AtomicUpdate instance;
-	instance = new AtomicUpdate(new DynamoDBConnector(), "obsoleteCounter", "size", "Feedback");
+	instance = new AtomicUpdate(new DynamoDBConnector(new RatingProperties(new SecurityHelper())), "obsoleteCounter", "size", "Feedback");
 	instance.updateCounter(articleId, entryCounter, counterUpdate);
     }
     

@@ -5,6 +5,7 @@
  */
 package de.loercher.rating.feedback;
 
+import de.loercher.rating.commons.DateTimeConverter;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMarshalling;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
@@ -17,6 +18,8 @@ import java.time.ZonedDateTime;
 @DynamoDBTable(tableName = "Feedback")
 public class FeedbackDataModel
 {
+    public static final String KEY_NAME = "ArticleID";
+    
     public static final String POSITIVE_COUNTER_NAME = "positiveCounter";
     public static final String COPYRIGHT_COUNTER_NAME = "copyrightCounter";
     public static final String OBSCENE_COUNTER_NAME = "obsceneCounter";
@@ -53,7 +56,7 @@ public class FeedbackDataModel
 	articleID = pArticleID;
     }
 
-    @DynamoDBHashKey(attributeName = "ArticleID")
+    @DynamoDBHashKey(attributeName = FeedbackDataModel.KEY_NAME)
     public String getArticleID()
     {
 	return articleID;

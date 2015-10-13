@@ -5,11 +5,13 @@
  */
 package de.loercher.rating.local.policy;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackDataModel;
 import de.loercher.rating.integration.DBITest;
-import de.loercher.rating.policy.InappropriateContentException;
+import de.loercher.rating.commons.InappropriateContentException;
 import de.loercher.rating.policy.PolicyController;
+import de.loercher.rating.commons.ResourceNotFoundException;
 import java.time.ZonedDateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,31 +35,31 @@ public class PolicyControllerTest
     public void setUp()
     {
 	feedback = mock(FeedbackController.class);
-	policy = new PolicyController(feedback);
+	policy = new PolicyController(feedback, new ObjectMapper());
 	dummy = new FeedbackDataModel(DBITest.articleId, now);
 	when(feedback.getFeedback(DBITest.articleId)).thenReturn(dummy);
     }
 
     @Test
-    public void testDelayedEntries() throws InappropriateContentException
+    public void testDelayedEntries() throws InappropriateContentException, ResourceNotFoundException
     {
 	dummy.setPositiveCounter(10);
 
-	Double firstRating = policy.getRating(DBITest.articleId);
+	Double firstRating = policy.calculateRating(DBITest.articleId);
 	dummy.setTimeOfPressEntry(now.minusDays(1));
 
-	assertTrue("Older Entry should be lower rated than newer one!", firstRating > policy.getRating(DBITest.articleId));
+	assertTrue("Older Entry should be lower rated than newer one!", firstRating > policy.calculateRating(DBITest.articleId));
     }
 
     @Test
-    public void testForbidden()
+    public void testForbidden() throws ResourceNotFoundException
     {
 	dummy.setSize(10);
 	dummy.setObsceneCounter(5);
 
 	try
 	{
-	    Double firstRating = policy.getRating(DBITest.articleId);
+	    Double firstRating = policy.calculateRating(DBITest.articleId);
 	    fail("Such a high obscene counter has to result in an InappropriateContentException!");
 	} catch (InappropriateContentException i)
 	{
@@ -66,7 +68,7 @@ public class PolicyControllerTest
 	dummy.setObsceneCounter(0);
 	try
 	{
-	    Double firstRating = policy.getRating(DBITest.articleId);
+	    Double firstRating = policy.calculateRating(DBITest.articleId);
 	} catch (InappropriateContentException i)
 	{
 	    fail("Obscene counter should be back to normal!");
@@ -76,7 +78,7 @@ public class PolicyControllerTest
 
 	try
 	{
-	    Double firstRating = policy.getRating(DBITest.articleId);
+	    Double firstRating = policy.calculateRating(DBITest.articleId);
 	    fail("Such a high obsolete counter has to result in an InappropriateContentException!");
 	} catch (InappropriateContentException i)
 	{
@@ -85,7 +87,7 @@ public class PolicyControllerTest
 	dummy.setObsoleteCounter(0);
 	try
 	{
-	    Double firstRating = policy.getRating(DBITest.articleId);
+	    Double firstRating = policy.calculateRating(DBITest.articleId);
 	} catch (InappropriateContentException i)
 	{
 	    fail("Obsolete counter should be back to normal!");
@@ -95,7 +97,7 @@ public class PolicyControllerTest
 
 	try
 	{
-	    Double firstRating = policy.getRating(DBITest.articleId);
+	    Double firstRating = policy.calculateRating(DBITest.articleId);
 	    fail("Such a high copyright counter has to result in an InappropriateContentException!");
 	} catch (InappropriateContentException i)
 	{
@@ -103,14 +105,14 @@ public class PolicyControllerTest
     }
 
     @Test
-    public void testJustCreatedEntry() throws InappropriateContentException
+    public void testJustCreatedEntry() throws InappropriateContentException, ResourceNotFoundException
     {
 	dummy.setPositiveCounter(2);
 
-	Double firstRating = policy.getRating(DBITest.articleId);
+	Double firstRating = policy.calculateRating(DBITest.articleId);
 
 	dummy.setPositiveCounter(3);
-	Double secondRating = policy.getRating(DBITest.articleId);
+	Double secondRating = policy.calculateRating(DBITest.articleId);
 
 	assertTrue("Adding a positive feedback should result in higher rating!", secondRating > firstRating);
 	assertTrue("First Rating should be near to 2.0!", isSimilar(firstRating, 2.0));
@@ -119,30 +121,30 @@ public class PolicyControllerTest
     }
 
     @Test
-    public void testNullValues() throws InappropriateContentException
+    public void testNullValues() throws InappropriateContentException, ResourceNotFoundException
     {
 	dummy.setPositiveCounter(0);
 
-	Double firstRating = policy.getRating(articleID);
+	Double firstRating = policy.calculateRating(articleID);
 	assertTrue("Rating should be roundabout 0.0!", isSimilar(firstRating, 0.0));
     }
 
     @Test
-    public void testWrongEntries() throws InappropriateContentException
+    public void testWrongEntries() throws InappropriateContentException, ResourceNotFoundException
     {
 	dummy.setSize(10);
 	dummy.setWrongCounter(5);
 
-	Double firstRating = policy.getRating(articleID);
+	Double firstRating = policy.calculateRating(articleID);
 	assertTrue("Rating should be less than 0!", firstRating < 0);
 	
 	dummy.setWrongCounter(0);
 	dummy.setPositiveCounter(20);
 	
-	firstRating = policy.getRating(articleID);
+	firstRating = policy.calculateRating(articleID);
 	
 	dummy.setWrongCounter(1);
-	assertTrue("Rating should be less with an additional wrong flag!", policy.getRating(articleID) < firstRating);
+	assertTrue("Rating should be less with an additional wrong flag!", policy.calculateRating(articleID) < firstRating);
     }
 
     private boolean isSimilar(Double a, Double b)

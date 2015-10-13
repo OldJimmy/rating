@@ -3,18 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.loercher.rating.policy;
+package de.loercher.rating.commons;
 
 /**
  *
  * @author Jimmy
  */
+
 public class InappropriateContentException extends Exception
 {
-    private String error;
-    
     public InappropriateContentException(String pError)
     {
-	error = pError;
+	super(pError);
     }
 }

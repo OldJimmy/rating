@@ -5,6 +5,7 @@
  */
 package de.loercher.rating.feedback;
 
+import de.loercher.rating.commons.DateTimeConverter;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMarshalling;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
@@ -18,6 +19,9 @@ import java.time.ZonedDateTime;
 @DynamoDBTable(tableName = "FeedbackEntry")
 public class FeedbackEntryDataModel implements Cloneable
 {
+    public static final String KEY_NAME = "ArticleID";
+    public static final String RANGE_NAME = "UserID";
+    
     public static final Integer MAXRATING = 5;
 
     private String articleID;
@@ -52,7 +56,7 @@ public class FeedbackEntryDataModel implements Cloneable
 	releaseDate = date;
     }
 
-    @DynamoDBHashKey(attributeName = "ArticleID")
+    @DynamoDBHashKey(attributeName = KEY_NAME)
     public String getArticleID()
     {
 	return articleID;
@@ -63,7 +67,7 @@ public class FeedbackEntryDataModel implements Cloneable
 	this.articleID = ArticleID;
     }
 
-    @DynamoDBRangeKey(attributeName = "UserID")
+    @DynamoDBRangeKey(attributeName = RANGE_NAME)
     public String getUserID()
     {
 	return userID;

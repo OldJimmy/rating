@@ -13,11 +13,14 @@ import java.time.ZonedDateTime;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Jimmy
  */
+@Component
 public class FeedbackController
 {
 
@@ -29,12 +32,13 @@ public class FeedbackController
 
     private final FlagHandlerFactory factory;
 
-    public FeedbackController()
+    @Autowired
+    public FeedbackController(DynamoDBConnector connector)
     {
 	client.setEndpoint("http://localhost:8000");
 	mapper = new DynamoDBMapper(client);
 
-	factory = new FlagHandlerFactory(new DynamoDBConnector());
+	factory = new FlagHandlerFactory(connector);
     }
 
     public FeedbackDataModel getFeedback(String articleID)
