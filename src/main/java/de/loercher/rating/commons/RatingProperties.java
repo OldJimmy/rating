@@ -39,13 +39,13 @@ public class RatingProperties
 	prop = new Properties();
 
 	// Try-with-resource -- never used that before :D
-	try (InputStream in = getClass().getResourceAsStream("/config/rating.properties"))
+	try (InputStream in = RatingProperties.class.getResourceAsStream("/config/rating.properties"))
 	{
 	    prop.load(in);
 	}
 
 	// load the obfuscated properties from secure.properties by using the obfuscation key
-	try (InputStream in = getClass().getResourceAsStream("/config/secure.properties"))
+	try (InputStream in = RatingProperties.class.getResourceAsStream("/config/secure.properties"))
 	{
 	    Properties obfuscatedProperties = new Properties();
 	    obfuscatedProperties.load(in);
