@@ -19,26 +19,26 @@ package de.loercher.rating.feedback.dto;
  *
  * @author Jimmy
  */
-public class PositivePostDTO 
+public class WrongPostDTO
 {
 
-    private boolean positive;
+    private boolean wrong;
+
+    public WrongPostDTO() {}
     
-    public PositivePostDTO() {}
-    
-    public PositivePostDTO(boolean pPositive)
+    public WrongPostDTO(boolean pWrong)
     {
-	positive = pPositive;
+	wrong = pWrong;
     }
 
-    public boolean isPositive()
+    public boolean isWrong()
     {
-	return positive;
+	return wrong;
     }
 
-    public void setPositive(boolean positive)
+    public void setWrong(boolean wrong)
     {
-	this.positive = positive;
+	this.wrong = wrong;
     }
 
 }

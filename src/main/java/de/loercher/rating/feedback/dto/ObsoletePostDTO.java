@@ -19,26 +19,25 @@ package de.loercher.rating.feedback.dto;
  *
  * @author Jimmy
  */
-public class PositivePostDTO 
+public class ObsoletePostDTO
 {
-
-    private boolean positive;
+    private boolean obsolete;
     
-    public PositivePostDTO() {}
+    public ObsoletePostDTO() {}
     
-    public PositivePostDTO(boolean pPositive)
+    public ObsoletePostDTO(boolean pObsolete)
     {
-	positive = pPositive;
+	obsolete = pObsolete;
     }
 
-    public boolean isPositive()
+    public boolean isObsolete()
     {
-	return positive;
+	return obsolete;
     }
 
-    public void setPositive(boolean positive)
+    public void setObsolete(boolean obsolete)
     {
-	this.positive = positive;
+	this.obsolete = obsolete;
     }
 
 }

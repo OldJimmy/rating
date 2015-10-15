@@ -19,26 +19,27 @@ package de.loercher.rating.feedback.dto;
  *
  * @author Jimmy
  */
-public class PositivePostDTO 
+public class CopyrightPostDTO 
 {
 
-    private boolean positive;
-    
-    public PositivePostDTO() {}
-    
-    public PositivePostDTO(boolean pPositive)
+    private boolean copyright;
+
+    public CopyrightPostDTO(){} 
+	  
+    public CopyrightPostDTO(boolean pCopyright)
     {
-	positive = pPositive;
+	copyright = pCopyright;
     }
 
-    public boolean isPositive()
+    public boolean isCopyright()
     {
-	return positive;
+	return copyright;
     }
 
-    public void setPositive(boolean positive)
+    public void setCopyright(boolean copyright)
     {
-	this.positive = positive;
+	this.copyright = copyright;
     }
+
 
 }

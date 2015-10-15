@@ -19,26 +19,26 @@ package de.loercher.rating.feedback.dto;
  *
  * @author Jimmy
  */
-public class PositivePostDTO 
+public class ObscenePostDTO
 {
 
-    private boolean positive;
+    private boolean obscene;
     
-    public PositivePostDTO() {}
+    public ObscenePostDTO() {}
     
-    public PositivePostDTO(boolean pPositive)
+    public ObscenePostDTO(boolean pObscene)
     {
-	positive = pPositive;
+	obscene = pObscene;
     }
 
-    public boolean isPositive()
+    public boolean isObscene()
     {
-	return positive;
+	return obscene;
     }
 
-    public void setPositive(boolean positive)
+    public void setObscene(boolean pObscene)
     {
-	this.positive = positive;
+	this.obscene = pObscene;
     }
 
 }

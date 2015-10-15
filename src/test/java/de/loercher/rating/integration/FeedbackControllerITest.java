@@ -5,12 +5,20 @@
  */
 package de.loercher.rating.integration;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.loercher.rating.commons.RatingProperties;
 import de.loercher.rating.commons.SecurityHelper;
 import de.loercher.rating.feedback.DynamoDBConnector;
 import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackDataModel;
 import de.loercher.rating.feedback.FeedbackEntryDataModel;
+import de.loercher.rating.feedback.FlagHandlerFactory;
+import de.loercher.rating.feedback.dto.CopyrightPostDTO;
+import de.loercher.rating.feedback.dto.ObscenePostDTO;
+import de.loercher.rating.feedback.dto.ObsoletePostDTO;
+import de.loercher.rating.feedback.dto.PositivePostDTO;
+import de.loercher.rating.feedback.dto.WrongPostDTO;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +50,13 @@ public class FeedbackControllerITest extends DBITest
 	super.setUp();
 	try
 	{
-	    controller = new FeedbackController(new DynamoDBConnector(new RatingProperties(new SecurityHelper())));
+	    SecurityHelper helper = new SecurityHelper();
+	    RatingProperties properties = new RatingProperties(helper);
+	    DynamoDBConnector connector = new DynamoDBConnector(properties);
+	    ObjectMapper objectMapper = new ObjectMapper();
+	    FlagHandlerFactory factory = new FlagHandlerFactory(connector);
+	    
+	    controller = new FeedbackController(connector, objectMapper, properties, factory);
 	} catch (IOException ex)
 	{
 	    Logger.getLogger(FeedbackControllerITest.class.getName()).log(Level.SEVERE, null, ex);
@@ -56,9 +70,9 @@ public class FeedbackControllerITest extends DBITest
     }
 
     @Test
-    public void testAddObscene() 
+    public void testAddObscene() throws JsonProcessingException 
     {
-	controller.addObscene(true, articleId, userId);
+	controller.addObscene(articleId, userId, new ObscenePostDTO(true));
 	
 	FeedbackDataModel feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue("Obscene counter must have been updated!", feedback.getObsceneCounter() == 1);
@@ -68,9 +82,9 @@ public class FeedbackControllerITest extends DBITest
     }
     
     @Test
-    public void testAddObsolete() 
+    public void testAddObsolete() throws JsonProcessingException 
     {
-	controller.addObsolete(true, articleId, userId);
+	controller.addObsolete(articleId, userId, new ObsoletePostDTO(true));
 	
 	FeedbackDataModel feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue("Obsolete counter must have been updated!", feedback.getObsoleteCounter() == 1);
@@ -80,9 +94,9 @@ public class FeedbackControllerITest extends DBITest
     }
     
     @Test
-    public void testAddCopyright() 
+    public void testAddCopyright() throws JsonProcessingException 
     {
-	controller.addCopyright(true, articleId, userId);
+	controller.addCopyright(articleId, userId, new CopyrightPostDTO(true));
 	
 	FeedbackDataModel feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue("Copyright counter must have been updated!", feedback.getCopyrightCounter() == 1);
@@ -92,9 +106,9 @@ public class FeedbackControllerITest extends DBITest
     }
     
     @Test
-    public void testAddWrong() 
+    public void testAddWrong() throws JsonProcessingException 
     {
-	controller.addWrong(true, articleId, userId);
+	controller.addWrong(articleId, userId, new WrongPostDTO(true));
 	
 	FeedbackDataModel feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue("Wrong counter must have been updated!", feedback.getWrongCounter()== 1);
@@ -112,23 +126,23 @@ public class FeedbackControllerITest extends DBITest
 	FeedbackDataModel feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue(feedback.getPositiveCounter() == 0);
 	
-	controller.addPositive(true, articleId, userId);
+	controller.addPositive(articleId, userId, new PositivePostDTO(true));
 	
 	feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue("Positive Counter must have been updated!", feedback.getPositiveCounter() == 1);
 	
-	controller.addPositive(true, articleId, userId);
-	controller.addPositive(true, articleId, userId);
-	controller.addPositive(true, articleId, userId);
+	controller.addPositive(articleId, userId, new PositivePostDTO(true));
+	controller.addPositive(articleId, userId, new PositivePostDTO(true));
+	controller.addPositive(articleId, userId, new PositivePostDTO(true));
 	
-	controller.addPositive(true, articleId, userId);
-	controller.addPositive(true, articleId, userId);
+	controller.addPositive(articleId, userId, new PositivePostDTO(true));
+	controller.addPositive(articleId, userId, new PositivePostDTO(true));
 	
 	feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue("Positive Counter must not be updated more than once foreach user! ( " + feedback.getPositiveCounter() + " )" , feedback.getPositiveCounter() == 1);
 	
 	String newUser = "abc";
-	controller.addPositive(true, articleId, newUser);
+	controller.addPositive(articleId, newUser, new PositivePostDTO(true));
 	
 	feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue("Positive Counter has to be 2 now!", feedback.getPositiveCounter() == 2);
@@ -145,17 +159,17 @@ public class FeedbackControllerITest extends DBITest
 	FeedbackDataModel feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue(feedback.getPositiveCounter()== 0);
 	
-	controller.addPositive(false, articleId, userId);
+	controller.addPositive(articleId, userId, new PositivePostDTO(false));
 	
 	feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue("Positive Counter must not have been updated!", feedback.getPositiveCounter() == 0);
 	
-	controller.addPositive(true, articleId, userId);
-	controller.addPositive(false, articleId, userId);
-	controller.addPositive(true, articleId, userId);
+	controller.addPositive(articleId, userId, new PositivePostDTO(true));
+	controller.addPositive(articleId, userId, new PositivePostDTO(false));
+	controller.addPositive(articleId, userId, new PositivePostDTO(true));
 	
-	controller.addPositive(false, articleId, userId);
-	controller.addPositive(false, articleId, userId);
+	controller.addPositive(articleId, userId, new PositivePostDTO(false));
+	controller.addPositive(articleId, userId, new PositivePostDTO(false));
 	
 	feedback = mapper.load(FeedbackDataModel.class, articleId);
 	assertTrue("Positive Counter must be back to 0! ( " + feedback.getPositiveCounter() + " )" , feedback.getPositiveCounter() == 0);
@@ -172,7 +186,7 @@ public class FeedbackControllerITest extends DBITest
 	FeedbackEntryDataModel model = mapper.load(FeedbackEntryDataModel.class, newArticleID, newUserID);
 	assertNull("There shouldn't be a model for new article id defined!", model);
 	
-	controller.addObscene(true, newArticleID, newUserID);
+	controller.addObscene(newArticleID, newUserID, new ObscenePostDTO(true));
 	
 	model = mapper.load(FeedbackEntryDataModel.class, newArticleID, newUserID);
 	assertNotNull("After adding flag there has to be a model!", model);
@@ -187,20 +201,20 @@ public class FeedbackControllerITest extends DBITest
 	assertTrue("Wrong category counter not set!", feedbackModel.getWrongCategoryCounter() == 0);
 	
 	String secondUserID = "alfich";
-	controller.addObscene(true, newArticleID, secondUserID);
+	controller.addObscene(newArticleID, secondUserID, new ObscenePostDTO(true));
 	
 	feedbackModel = mapper.load(FeedbackDataModel.class, newArticleID);
 	assertTrue("Counter has to be 2 now!", feedbackModel.getSize() == 2);
 	assertTrue("Obscene counter has to be 2 now!", feedbackModel.getObsceneCounter() == 2);
 	
 	String thirdUserID = "TBC";
-	controller.addObscene(false, newArticleID, thirdUserID);
+	controller.addObscene(newArticleID, thirdUserID, new ObscenePostDTO(false));
 	
 	feedbackModel = mapper.load(FeedbackDataModel.class, newArticleID);
 	assertTrue("Counter has to be 3 now!", feedbackModel.getSize() == 3);
 	assertTrue("Obscene counter has to be 2 like before!", feedbackModel.getObsceneCounter() == 2);
 	
-	controller.addObscene(false, newArticleID, secondUserID);
+	controller.addObscene(newArticleID, secondUserID, new ObscenePostDTO(false));
 	
 	feedbackModel = mapper.load(FeedbackDataModel.class, newArticleID);
 	assertTrue("Counter has to be 3 like before!", feedbackModel.getSize() == 3);

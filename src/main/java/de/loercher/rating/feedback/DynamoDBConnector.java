@@ -23,7 +23,7 @@ public class DynamoDBConnector
 {
     private final String ACCESS_KEY_NAME = "amazonAccessKey";
     private final String SECRET_KEY_NAME = "amazonSecretKey";
-    private final String URL_NAME = "url";
+    private final String URL_NAME = "dynamodbUrl";
 
     private final RatingProperties ratingProperties;
 

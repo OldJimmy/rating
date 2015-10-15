@@ -7,11 +7,14 @@ package de.loercher.rating.feedback;
 
 import de.loercher.rating.commons.DateTimeConverter;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIgnore;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMarshalling;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBVersionAttribute;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Jimmy
@@ -19,9 +22,10 @@ import java.time.ZonedDateTime;
 @DynamoDBTable(tableName = "FeedbackEntry")
 public class FeedbackEntryDataModel implements Cloneable
 {
+
     public static final String KEY_NAME = "ArticleID";
     public static final String RANGE_NAME = "UserID";
-    
+
     public static final Integer MAXRATING = 5;
 
     private String articleID;
@@ -32,11 +36,11 @@ public class FeedbackEntryDataModel implements Cloneable
     private boolean obscene = false;
     private boolean copyright = false;
     private boolean wrong = false;
-    
+
     private ZonedDateTime releaseDate;
     private Integer contentRating = null;
     private Integer styleRating = null;
-    
+
     private Long version;
 
     public FeedbackEntryDataModel()
@@ -182,8 +186,8 @@ public class FeedbackEntryDataModel implements Cloneable
     {
 	this.wrong = wrong;
     }
-    
-     public void setWrong()
+
+    public void setWrong()
     {
 	this.wrong = true;
     }
@@ -198,7 +202,8 @@ public class FeedbackEntryDataModel implements Cloneable
     {
 	this.version = version;
     }
-    
+
+    @DynamoDBIgnore
     public FeedbackEntryDataModel cloneEntry()
     {
 	FeedbackEntryDataModel newModel = new FeedbackEntryDataModel(releaseDate, articleID, userID);
@@ -208,13 +213,48 @@ public class FeedbackEntryDataModel implements Cloneable
 	newModel.setPositive(positive);
 	newModel.setVersion(version);
 	newModel.setWrong(wrong);
-	
-	if (styleRating != null) newModel.setStyleRating(styleRating);
-	if (contentRating != null) newModel.setContentRating(contentRating);
-	
+
+	if (styleRating != null)
+	{
+	    newModel.setStyleRating(styleRating);
+	}
+	if (contentRating != null)
+	{
+	    newModel.setContentRating(contentRating);
+	}
+
 	return newModel;
     }
-    
+
+    public Map<String, Object> toMap()
+    {
+	Map<String, Object> result = new HashMap<>();
+	result.put("positive", positive);
+	result.put("obsolete", obsolete);
+	result.put("obscene", obscene);
+	result.put("copyright", copyright);
+	result.put("wrong", wrong);
+	result.put("releaseDate", new DateTimeConverter().marshall(releaseDate));
+
+	if (contentRating == null)
+	{
+	    result.put("contentRating", "n/a");
+	} else
+	{
+	    result.put("contentRating", contentRating);
+	}
+
+	if (styleRating == null)
+	{
+	    result.put("styleRating", "n/a");
+	} else
+	{
+	    result.put("styleRating", styleRating);
+	}
+
+	return result;
+    }
+
     private void throwIfOutOfBounds(Integer rate) throws IllegalArgumentException
     {
 	if (rate <= 0)
