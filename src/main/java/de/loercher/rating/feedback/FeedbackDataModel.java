@@ -24,7 +24,7 @@ public class FeedbackDataModel
     public static final String COPYRIGHT_COUNTER_NAME = "copyrightCounter";
     public static final String OBSCENE_COUNTER_NAME = "obsceneCounter";
     public static final String OBSOLETE_COUNTER_NAME = "obsoleteCounter";
-    public static final String WRONG_COUNTER_NAME = "falseCounter";
+    public static final String WRONG_COUNTER_NAME = "wrongCounter";
     
     public static final String WRONG_CATEGORY_COUNTER_NAME = "wrongCategoryCounter";
     public static final String WRONG_PLACE_COUNTER_NAME = "wrongPlaceCounter";

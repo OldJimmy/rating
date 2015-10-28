@@ -9,23 +9,18 @@ package de.loercher.rating.commons;
  *
  * @author Jimmy
  */
-
-public class ResourceNotFoundException extends Exception
+public class ArticleResourceNotFoundException extends Exception
 {
-    private String id;
+    private final String articleID;
 
-    public String getId()
+    public String getArticleID()
     {
-	return id;
-    }
-
-    public void setId(String id)
-    {
-	this.id = id;
+	return articleID;
     }
     
-    public ResourceNotFoundException(String pError)
+    public ArticleResourceNotFoundException(String pArticleID, String pError)
     {
 	super(pError);
+	articleID = pArticleID;
     }
 }

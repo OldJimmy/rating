@@ -6,18 +6,17 @@
 package de.loercher.rating.policy;
 
 import de.loercher.rating.commons.InappropriateContentException;
-import de.loercher.rating.commons.ResourceNotFoundException;
+import de.loercher.rating.commons.ArticleResourceNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackDataModel;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PolicyController
 {
 
-    private static final Logger log = Logger.getLogger(PolicyController.class);
+     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /*
      Example calculation: in 72 hours (3 days) the rating goes down 50% with the following parameters:
@@ -61,48 +60,29 @@ public class PolicyController
     }
 
     @RequestMapping(value = "/{articleId}/rating", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getRating(@PathVariable String articleId) throws JsonProcessingException
+    public ResponseEntity<String> getRating(@PathVariable String articleId) throws JsonProcessingException, ArticleResourceNotFoundException, InappropriateContentException
     {
 	Map<String, Object> result = new HashMap<>();
 	result.put("articleID", articleId);
-	try
-	{
-	    Double rating = calculateRating(articleId);
+	Double rating = calculateRating(articleId);
 
-	    result.put("appropriate", true);
-	    result.put("rating", rating);
+	result.put("appropriate", true);
+	result.put("rating", rating);
 
-	    return new ResponseEntity<>(mapper.writeValueAsString(result), HttpStatus.OK);
-	} catch (ResourceNotFoundException ex)
-	{
-	    log.warn("Rating entry with the articleId " + articleId + " not existing!", ex);
-	    
-	    Timestamp now = new Timestamp(new Date().getTime());
-	    result.put("timestamp", now);
-	    result.put("status", 404);
-	    result.put("error", "Not Found");
-	    
-	    return new ResponseEntity<>(mapper.writeValueAsString(result), HttpStatus.NOT_FOUND);
-	} catch (InappropriateContentException ex)
-	{
-	    log.warn("Entry with the articleId " + articleId + " isn't appropriate!", ex);
-
-	    result.put("appropriate", false);
-	    return new ResponseEntity<>(mapper.writeValueAsString(result), HttpStatus.OK);
-	}
+	return new ResponseEntity<>(mapper.writeValueAsString(result), HttpStatus.OK);
     }
 
-    public Double calculateRating(String articleID) throws InappropriateContentException, ResourceNotFoundException
+    public Double calculateRating(String articleID) throws InappropriateContentException, ArticleResourceNotFoundException
     {
 	FeedbackDataModel model = feedback.getFeedback(articleID);
 	if (model == null)
 	{
-	    throw new ResourceNotFoundException("Entry with the articleId " + articleID + " not existing!");
+	    throw new ArticleResourceNotFoundException(articleID, "Entry with the articleId " + articleID + " not existing!");
 	}
 
 	if (!isLegit(model))
 	{
-	    throw new InappropriateContentException("Entry not appropriate to display");
+	    throw new InappropriateContentException(articleID, "Entry not appropriate to display: " + articleID);
 	}
 
 	ZonedDateTime currentTime = ZonedDateTime.now();

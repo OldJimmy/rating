@@ -12,8 +12,10 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.GlobalSecondaryIndex;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
+import com.amazonaws.services.dynamodbv2.model.Projection;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackDataModel;
@@ -81,18 +83,36 @@ public class DynamoDBFactory
 		    .withAttributeName("UserID")
 		    .withKeyType(KeyType.RANGE));
 
+	    /*
+	     Create secondary index.
+	     */
+	    GlobalSecondaryIndex createUserIndex = new GlobalSecondaryIndex()
+		    .withIndexName("UserIndex")
+		    .withProvisionedThroughput(new ProvisionedThroughput()
+			    .withReadCapacityUnits(5L)
+			    .withWriteCapacityUnits(6L))
+		    .withKeySchema(new KeySchemaElement()
+			    .withAttributeName("UserID")
+			    .withKeyType(KeyType.HASH),
+			    new KeySchemaElement()
+			    .withAttributeName("ArticleID")
+			    .withKeyType(KeyType.RANGE))
+		    .withProjection(new Projection()
+			    .withProjectionType("ALL"));;
+
 	    CreateTableRequest request = new CreateTableRequest()
 		    .withTableName(tableName)
 		    .withKeySchema(keySchema)
 		    .withAttributeDefinitions(attributeDefinitions)
 		    .withProvisionedThroughput(new ProvisionedThroughput()
 			    .withReadCapacityUnits(5L)
-			    .withWriteCapacityUnits(6L));
+			    .withWriteCapacityUnits(6L))
+		    .withGlobalSecondaryIndexes(createUserIndex);
 
 	    log.info("Issuing CreateTable request for " + tableName);
 	    Table table = dynamoDB.createTable(request);
 
-	    log.info("Waiting for " + tableName + " to be created...this may take a while...");
+	    log.info("Waiting for " + tableName + " to be created... this may take a while...");
 
 	    table.waitForActive();
 
@@ -143,7 +163,7 @@ public class DynamoDBFactory
 	//Initial setup table Feedback
 	FeedbackDataModel model = new FeedbackDataModel(TEST_ARTICLE_ID, TEST_TIME);
 	mapper.save(model);
-	
+
     }
 
     public static void deleteTables()

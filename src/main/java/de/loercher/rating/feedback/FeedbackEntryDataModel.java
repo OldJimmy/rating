@@ -8,6 +8,8 @@ package de.loercher.rating.feedback;
 import de.loercher.rating.commons.DateTimeConverter;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIgnore;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMarshalling;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
@@ -60,6 +62,7 @@ public class FeedbackEntryDataModel implements Cloneable
 	releaseDate = date;
     }
 
+    @DynamoDBIndexRangeKey(globalSecondaryIndexName = "UserIndex")
     @DynamoDBHashKey(attributeName = KEY_NAME)
     public String getArticleID()
     {
@@ -71,6 +74,7 @@ public class FeedbackEntryDataModel implements Cloneable
 	this.articleID = ArticleID;
     }
 
+    @DynamoDBIndexHashKey(globalSecondaryIndexName = "UserIndex")
     @DynamoDBRangeKey(attributeName = RANGE_NAME)
     public String getUserID()
     {
@@ -229,6 +233,7 @@ public class FeedbackEntryDataModel implements Cloneable
     public Map<String, Object> toMap()
     {
 	Map<String, Object> result = new HashMap<>();
+	result.put("articleID", articleID);
 	result.put("positive", positive);
 	result.put("obsolete", obsolete);
 	result.put("obscene", obscene);

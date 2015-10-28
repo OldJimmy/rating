@@ -11,7 +11,7 @@ import de.loercher.rating.feedback.FeedbackDataModel;
 import de.loercher.rating.integration.DBITest;
 import de.loercher.rating.commons.InappropriateContentException;
 import de.loercher.rating.policy.PolicyController;
-import de.loercher.rating.commons.ResourceNotFoundException;
+import de.loercher.rating.commons.ArticleResourceNotFoundException;
 import java.time.ZonedDateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class PolicyControllerTest
     }
 
     @Test
-    public void testDelayedEntries() throws InappropriateContentException, ResourceNotFoundException
+    public void testDelayedEntries() throws InappropriateContentException, ArticleResourceNotFoundException
     {
 	dummy.setPositiveCounter(10);
 
@@ -52,14 +52,14 @@ public class PolicyControllerTest
     }
 
     @Test
-    public void testForbidden() throws ResourceNotFoundException
+    public void testForbidden() throws ArticleResourceNotFoundException
     {
 	dummy.setSize(10);
 	dummy.setObsceneCounter(5);
 
 	try
 	{
-	    Double firstRating = policy.calculateRating(DBITest.articleId);
+	    policy.calculateRating(DBITest.articleId);
 	    fail("Such a high obscene counter has to result in an InappropriateContentException!");
 	} catch (InappropriateContentException i)
 	{
@@ -68,7 +68,7 @@ public class PolicyControllerTest
 	dummy.setObsceneCounter(0);
 	try
 	{
-	    Double firstRating = policy.calculateRating(DBITest.articleId);
+	    policy.calculateRating(DBITest.articleId);
 	} catch (InappropriateContentException i)
 	{
 	    fail("Obscene counter should be back to normal!");
@@ -78,7 +78,7 @@ public class PolicyControllerTest
 
 	try
 	{
-	    Double firstRating = policy.calculateRating(DBITest.articleId);
+	    policy.calculateRating(DBITest.articleId);
 	    fail("Such a high obsolete counter has to result in an InappropriateContentException!");
 	} catch (InappropriateContentException i)
 	{
@@ -87,7 +87,7 @@ public class PolicyControllerTest
 	dummy.setObsoleteCounter(0);
 	try
 	{
-	    Double firstRating = policy.calculateRating(DBITest.articleId);
+	    policy.calculateRating(DBITest.articleId);
 	} catch (InappropriateContentException i)
 	{
 	    fail("Obsolete counter should be back to normal!");
@@ -97,7 +97,7 @@ public class PolicyControllerTest
 
 	try
 	{
-	    Double firstRating = policy.calculateRating(DBITest.articleId);
+	    policy.calculateRating(DBITest.articleId);
 	    fail("Such a high copyright counter has to result in an InappropriateContentException!");
 	} catch (InappropriateContentException i)
 	{
@@ -105,7 +105,7 @@ public class PolicyControllerTest
     }
 
     @Test
-    public void testJustCreatedEntry() throws InappropriateContentException, ResourceNotFoundException
+    public void testJustCreatedEntry() throws InappropriateContentException, ArticleResourceNotFoundException
     {
 	dummy.setPositiveCounter(2);
 
@@ -121,7 +121,7 @@ public class PolicyControllerTest
     }
 
     @Test
-    public void testNullValues() throws InappropriateContentException, ResourceNotFoundException
+    public void testNullValues() throws InappropriateContentException, ArticleResourceNotFoundException
     {
 	dummy.setPositiveCounter(0);
 
@@ -130,7 +130,7 @@ public class PolicyControllerTest
     }
 
     @Test
-    public void testWrongEntries() throws InappropriateContentException, ResourceNotFoundException
+    public void testWrongEntries() throws InappropriateContentException, ArticleResourceNotFoundException
     {
 	dummy.setSize(10);
 	dummy.setWrongCounter(5);

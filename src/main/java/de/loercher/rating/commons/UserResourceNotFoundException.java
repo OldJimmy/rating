@@ -9,11 +9,18 @@ package de.loercher.rating.commons;
  *
  * @author Jimmy
  */
-
-public class InappropriateContentException extends ArticleResourceNotFoundException
+public class UserResourceNotFoundException extends Exception
 {
-    public InappropriateContentException(String pArticleID, String pError)
+    private final String userID;
+
+    public UserResourceNotFoundException(String pUserID, String pError)
     {
-	super(pArticleID, pError);
+	super(pError);
+	userID = pUserID;
+    }
+    
+    public String getUserID()
+    {
+	return userID;
     }
 }

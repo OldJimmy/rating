@@ -18,6 +18,7 @@ package de.loercher.rating.commons;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,11 +30,13 @@ import org.springframework.stereotype.Component;
 public class RatingProperties
 {
 
+    private org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
+    
     private final Properties prop;
     private final SecurityHelper helper;
 
     @Autowired
-    public RatingProperties(SecurityHelper pHelper) throws IOException
+    public RatingProperties(SecurityHelper pHelper) 
     {
 	helper = pHelper;
 	prop = new Properties();
@@ -42,6 +45,9 @@ public class RatingProperties
 	try (InputStream in = RatingProperties.class.getResourceAsStream("/config/rating.properties"))
 	{
 	    prop.load(in);
+	} catch (IOException ex)
+	{
+	    log.error("Unexpected error occured on loading file /config/rating.properties. Loading unsuccessful.", ex);
 	}
 
 	// load the obfuscated properties from secure.properties by using the obfuscation key
@@ -53,6 +59,9 @@ public class RatingProperties
 	    obfuscatedProperties.replaceAll((a, b) -> helper.unobfuscateString((String) b));
 
 	    prop.putAll(obfuscatedProperties);
+	} catch (IOException ex)
+	{
+	    log.error("Unexpected error occured on loading file /config/secure.properties. Loading unsuccessful.", ex);
 	}
     }
 

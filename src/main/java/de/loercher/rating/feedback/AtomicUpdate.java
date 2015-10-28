@@ -13,6 +13,9 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.ReturnValue;
+import de.loercher.rating.commons.GeneralRatingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -20,6 +23,8 @@ import com.amazonaws.services.dynamodbv2.model.ReturnValue;
  */
 public class AtomicUpdate
 {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final DynamoDB dynamoDB;
     private final String counterName;
@@ -36,25 +41,33 @@ public class AtomicUpdate
 	tableName = pTableName;
     }
 
-    public void updateCounter(String articleId, Integer entryCounterUpdate, Integer counterUpdate)
+    public void updateCounter(String articleId, Integer entryCounterUpdate, Integer counterUpdate) throws GeneralRatingException
     {
 	Table table = dynamoDB.getTable(tableName);
 
-	Item item = table.getItem(FeedbackDataModel.KEY_NAME, articleId);
-	if (item == null)
+	try
 	{
-	    item = new Item()
-		    .withPrimaryKey(FeedbackDataModel.KEY_NAME, articleId)
-		    .withNumber(FeedbackDataModel.POSITIVE_COUNTER_NAME, 0)
-		    .withNumber(FeedbackDataModel.COPYRIGHT_COUNTER_NAME, 0)
-		    .withNumber(FeedbackDataModel.OBSCENE_COUNTER_NAME, 0)
-		    .withNumber(FeedbackDataModel.OBSOLETE_COUNTER_NAME, 0)
-		    .withNumber(FeedbackDataModel.WRONG_PLACE_COUNTER_NAME, 0)
-		    .withNumber(FeedbackDataModel.WRONG_CATEGORY_COUNTER_NAME, 0)
-		    .withNumber(FeedbackDataModel.WRONG_COUNTER_NAME, 0)
-		    .withNumber(FeedbackDataModel.SIZE_NAME, 0);
-	    
-	    table.putItem(item);
+	    Item item = table.getItem(FeedbackDataModel.KEY_NAME, articleId);
+	    if (item == null)
+	    {
+		item = new Item()
+			.withPrimaryKey(FeedbackDataModel.KEY_NAME, articleId)
+			.withNumber(FeedbackDataModel.POSITIVE_COUNTER_NAME, 0)
+			.withNumber(FeedbackDataModel.COPYRIGHT_COUNTER_NAME, 0)
+			.withNumber(FeedbackDataModel.OBSCENE_COUNTER_NAME, 0)
+			.withNumber(FeedbackDataModel.OBSOLETE_COUNTER_NAME, 0)
+			.withNumber(FeedbackDataModel.WRONG_PLACE_COUNTER_NAME, 0)
+			.withNumber(FeedbackDataModel.WRONG_CATEGORY_COUNTER_NAME, 0)
+			.withNumber(FeedbackDataModel.WRONG_COUNTER_NAME, 0)
+			.withNumber(FeedbackDataModel.SIZE_NAME, 0);
+
+		table.putItem(item);
+	    }
+	} catch (Exception e)
+	{
+	    GeneralRatingException ex = new GeneralRatingException("Unexpected exception occurred by adding new item to FeedbackDataModel since not already available. ArticleID: " + articleId + ".", e);
+	    log.error(ex.getLoggingString(), e);
+	    throw ex;
 	}
 
 	UpdateItemSpec spec = new UpdateItemSpec()
@@ -66,7 +79,15 @@ public class AtomicUpdate
 			.withNumber(":one", counterUpdate))
 		.withReturnValues(ReturnValue.ALL_NEW);
 
-	outcome = table.updateItem(spec);
+	try
+	{
+	    outcome = table.updateItem(spec);
+	} catch (Exception e)
+	{
+	    GeneralRatingException ex = new GeneralRatingException("Unexpected exception occurred by performing atomic update on article " + articleId + " on counter " + counterName + ".", e);
+	    log.error(ex.getLoggingString(), e);
+	    throw ex;
+	}
     }
 
     public UpdateItemOutcome getOutcome()
