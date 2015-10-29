@@ -5,8 +5,8 @@
  */
 package de.loercher.rating.policy;
 
-import de.loercher.rating.commons.InappropriateContentException;
-import de.loercher.rating.commons.ArticleResourceNotFoundException;
+import de.loercher.rating.commons.exception.InappropriateContentException;
+import de.loercher.rating.commons.exception.ArticleResourceNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.loercher.rating.feedback.FeedbackController;

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.loercher.rating.commons.RatingProperties;
 import de.loercher.rating.commons.SecurityHelper;
+import de.loercher.rating.commons.exception.GeneralRatingException;
 import de.loercher.rating.feedback.DynamoDBConnector;
 import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackDataModel;
@@ -70,7 +71,7 @@ public class FeedbackControllerITest extends DBITest
     }
 
     @Test
-    public void testAddObscene() throws JsonProcessingException 
+    public void testAddObscene() throws JsonProcessingException, GeneralRatingException 
     {
 	controller.addObscene(articleId, userId, new ObscenePostDTO(true));
 	
@@ -82,7 +83,7 @@ public class FeedbackControllerITest extends DBITest
     }
     
     @Test
-    public void testAddObsolete() throws JsonProcessingException 
+    public void testAddObsolete() throws JsonProcessingException, GeneralRatingException 
     {
 	controller.addObsolete(articleId, userId, new ObsoletePostDTO(true));
 	
@@ -94,7 +95,7 @@ public class FeedbackControllerITest extends DBITest
     }
     
     @Test
-    public void testAddCopyright() throws JsonProcessingException 
+    public void testAddCopyright() throws JsonProcessingException, IllegalArgumentException, GeneralRatingException 
     {
 	controller.addCopyright(articleId, userId, new CopyrightPostDTO(true));
 	
@@ -106,7 +107,7 @@ public class FeedbackControllerITest extends DBITest
     }
     
     @Test
-    public void testAddWrong() throws JsonProcessingException 
+    public void testAddWrong() throws JsonProcessingException, IllegalArgumentException, GeneralRatingException 
     {
 	controller.addWrong(articleId, userId, new WrongPostDTO(true));
 	

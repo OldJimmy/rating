@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.loercher.rating.commons;
+package de.loercher.rating.commons.exception;
 
 import java.sql.Timestamp;
 import java.util.Date;

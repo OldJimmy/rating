@@ -18,6 +18,7 @@ package de.loercher.rating.commons;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ import org.springframework.stereotype.Component;
 public class RatingProperties
 {
 
-    private org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
+    private Logger log = LoggerFactory.getLogger(this.getClass());
     
     private final Properties prop;
     private final SecurityHelper helper;

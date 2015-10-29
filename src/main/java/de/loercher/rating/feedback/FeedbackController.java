@@ -12,9 +12,9 @@ import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.loercher.rating.commons.RatingProperties;
-import de.loercher.rating.commons.ArticleResourceNotFoundException;
-import de.loercher.rating.commons.GeneralRatingException;
-import de.loercher.rating.commons.UserResourceNotFoundException;
+import de.loercher.rating.commons.exception.ArticleResourceNotFoundException;
+import de.loercher.rating.commons.exception.GeneralRatingException;
+import de.loercher.rating.commons.exception.UserResourceNotFoundException;
 import de.loercher.rating.feedback.dto.CopyrightPostDTO;
 import de.loercher.rating.feedback.dto.ObscenePostDTO;
 import de.loercher.rating.feedback.dto.ObsoletePostDTO;
@@ -245,7 +245,10 @@ public class FeedbackController
 	    }
 	} catch (AmazonServiceException e)
 	{
-	    log.error("Updating conditionally FeedbackEntry failed after " + MAX_ATTEMPTS + " attempts.", e);
+	    GeneralRatingException ex = new GeneralRatingException("Updating conditionally FeedbackEntry failed after " + MAX_ATTEMPTS + " attempts. UserID: " + userID + ", ArticleID: " + articleID + ".", e);
+	    log.error(ex.getError(), e);
+	    
+	    throw ex;
 	}
     }
 

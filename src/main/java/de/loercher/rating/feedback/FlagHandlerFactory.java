@@ -29,4 +29,5 @@ public class FlagHandlerFactory
     {
 	return new AtomicUpdate(connector, pCounterName, pSizeAttribute, FEEDBACK_TABLE_NAME);
     }
+    
 }

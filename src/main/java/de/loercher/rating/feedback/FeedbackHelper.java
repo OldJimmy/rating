@@ -11,7 +11,6 @@ package de.loercher.rating.feedback;
  */
 public class FeedbackHelper
 {
-
     public Integer calculateAddend(boolean oldEntry, boolean newEntry)
     {
 	if (oldEntry == newEntry)

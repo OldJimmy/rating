@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.loercher.rating.commons;
+package de.loercher.rating.commons.exception;
 
 import com.amazonaws.services.simpleworkflow.model.UnknownResourceException;
 import com.fasterxml.jackson.databind.ObjectMapper;
