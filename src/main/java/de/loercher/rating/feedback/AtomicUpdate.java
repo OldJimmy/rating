@@ -40,7 +40,7 @@ public class AtomicUpdate
 	sizeAttribute = pSizeAttribute;
 	tableName = pTableName;
     }
-
+    
     public void updateCounter(String articleId, Integer entryCounterUpdate, Integer counterUpdate) throws GeneralRatingException
     {
 	Table table = dynamoDB.getTable(tableName);
