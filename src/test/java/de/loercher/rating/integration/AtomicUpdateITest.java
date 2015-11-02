@@ -7,6 +7,7 @@ package de.loercher.rating.integration;
 
 import de.loercher.rating.commons.RatingProperties;
 import de.loercher.rating.commons.SecurityHelper;
+import de.loercher.rating.commons.exception.GeneralRatingException;
 import de.loercher.rating.feedback.AtomicUpdate;
 import de.loercher.rating.feedback.DynamoDBConnector;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class AtomicUpdateITest extends DBITest
      * @throws java.io.IOException
      */
     @Test
-    public void testUpdateCounter() throws IOException
+    public void testUpdateCounter() throws IOException, GeneralRatingException
     {
 	Integer entryCounter = 1;
 	Integer counterUpdate = 2;
