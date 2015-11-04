@@ -35,6 +35,7 @@ public class AtomicUpdateITest extends DBITest
     /**
      * Test of updateCounter method, of class AtomicUpdate.
      * @throws java.io.IOException
+     * @throws de.loercher.rating.commons.exception.GeneralRatingException
      */
     @Test
     public void testUpdateCounter() throws IOException, GeneralRatingException
