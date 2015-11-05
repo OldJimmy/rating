@@ -49,6 +49,7 @@ public class PolicyController
     private static final Double OBSCENEPERCENTAGETHRESHOLD = 0.1;
     private static final Double COPYRIGHTPERCENTAGETHRESHOLD = 0.1;
 
+    // thread safe
     private final FeedbackController feedback;
     private final ObjectMapper mapper;
 

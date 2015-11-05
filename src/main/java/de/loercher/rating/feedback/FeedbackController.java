@@ -57,6 +57,7 @@ public class FeedbackController
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final static Integer MAX_ATTEMPTS = 5;
 
+    // the following classes are thread-safe thus can be declared as class members!
     private final DynamoDBMapper mapper;
     private final ObjectMapper objectMapper;
     private final Properties properties;
@@ -220,7 +221,9 @@ public class FeedbackController
 	updateDatabaseWithFlag(articleID, userID, action, flag, update);
     }
 
-    private void updateDatabaseWithFlag(String articleID, String userID, RepeatedDynamoDBAction action, boolean flag, AtomicUpdate update) throws IllegalArgumentException, GeneralRatingException
+    // there could be a scenario in which there will be a slight inconsistence when the second DB-access fails (no transaction capability), 
+    // but at least there is thrown an exception
+    private synchronized void updateDatabaseWithFlag(String articleID, String userID, RepeatedDynamoDBAction action, boolean flag, AtomicUpdate update) throws IllegalArgumentException, GeneralRatingException
     {
 	Integer entryCounterUpdate = 0;
 
