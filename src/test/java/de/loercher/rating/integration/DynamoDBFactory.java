@@ -43,7 +43,7 @@ public class DynamoDBFactory
 
     public static void connectToDB()
     {
-	client = new AmazonDynamoDBClient(new BasicAWSCredentials("AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"));
+ 	client = new AmazonDynamoDBClient(new BasicAWSCredentials("AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"));
 	client.setEndpoint("http://localhost:8000");
 
 	dynamoDB = new DynamoDB(client);
@@ -98,7 +98,7 @@ public class DynamoDBFactory
 			    .withAttributeName("ArticleID")
 			    .withKeyType(KeyType.RANGE))
 		    .withProjection(new Projection()
-			    .withProjectionType("ALL"));;
+			    .withProjectionType("ALL"));
 
 	    CreateTableRequest request = new CreateTableRequest()
 		    .withTableName(tableName)

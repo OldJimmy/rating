@@ -67,4 +67,10 @@ public class SecurityHelperTest
 	assertNull("Null should be handled tolerantly. Return value should be null!", helper.unobfuscateString(input));
     }
 
+    @Test
+    public void generateSecurityToken()
+    {
+	// Not really a test, but can be used to encrypt secret
+	System.out.println("Obfuscated KEY: " + helper.obfuscateString("FzTJ03MpAw6u1nCHf4SFNJlyxTqHkNkSADNEZ9YX"));
+    }
 }

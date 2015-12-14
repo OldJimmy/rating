@@ -6,6 +6,8 @@
 package de.loercher.rating.feedback;
 
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DynamoDBConnector
 {
+
     private final String ACCESS_KEY_NAME = "amazonAccessKey";
     private final String SECRET_KEY_NAME = "amazonSecretKey";
     private final String URL_NAME = "dynamodbUrl";
@@ -38,8 +41,14 @@ public class DynamoDBConnector
 	String accessKey = ratingProperties.getProp().getProperty(ACCESS_KEY_NAME);
 	String secretKey = ratingProperties.getProp().getProperty(SECRET_KEY_NAME);
 	client = new AmazonDynamoDBClient(new BasicAWSCredentials(accessKey, secretKey));
+	client.setRegion(Region.getRegion(Regions.EU_CENTRAL_1));
+
+	String url = ratingProperties.getProp().getProperty(URL_NAME);
+	if (!(url == null || "".equals(url)))
+	{
+	    client.setEndpoint(url);
+	}
 	
-	client.setEndpoint(ratingProperties.getProp().getProperty(URL_NAME));
 	dynamoDB = new DynamoDB(client);
     }
 

@@ -15,12 +15,17 @@
  */
 package de.loercher.rating.commons;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,27 +37,95 @@ public class RatingProperties
 {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
-    
+
+    private final String PROP_FILE = "/config/rating.properties";
+    private final String SECURE_FILE = "/config/secure.properties";
+
+    private final String PROP_FILE_ENDING = "rating.properties";
+    private final String SECURE_FILE_ENDING = "secure.properties";
+
     private final Properties prop;
     private final SecurityHelper helper;
 
     @Autowired
-    public RatingProperties(SecurityHelper pHelper) 
+    public RatingProperties(SecurityHelper pHelper, ApplicationArguments args)
     {
 	helper = pHelper;
 	prop = new Properties();
 
-	// Try-with-resource -- never used that before :D
-	try (InputStream in = RatingProperties.class.getResourceAsStream("/config/rating.properties"))
+	List<String> propertyFileOptions = args.getOptionValues("props");
+
+	String propertyFile = PROP_FILE;
+	String securePropertyFile = SECURE_FILE;
+	if (!(propertyFileOptions == null) && !propertyFileOptions.isEmpty())
 	{
-	    prop.load(in);
-	} catch (IOException ex)
+	    propertyFile = propertyFileOptions.get(0) + "\\" + PROP_FILE_ENDING;
+	    securePropertyFile = propertyFileOptions.get(0) + "\\" + SECURE_FILE_ENDING;
+	}
+
+	propertyFile = propertyFile.replace("\\", "/");
+	securePropertyFile = securePropertyFile.replace("\\", "/");
+
+	initProperties(propertyFile, securePropertyFile);
+    }
+
+    public RatingProperties(SecurityHelper pHelper)
+    {
+	helper = pHelper;
+	prop = new Properties();
+
+	initProperties(PROP_FILE, SECURE_FILE);
+    }
+
+    private void initProperties(String propertyFile, String securePropertyFile)
+    {
+	InputStream in1 = RatingProperties.class.getResourceAsStream(propertyFile);
+	try
 	{
-	    log.error("Unexpected error occured on loading file /config/rating.properties. Loading unsuccessful.", ex);
+	    prop.load(in1);
+	} catch (Exception ex)
+	{
+	    InputStream hin = null;
+	    try
+	    {
+		hin = new FileInputStream(propertyFile);
+		prop.load(hin);
+	    } catch (FileNotFoundException ex1)
+	    {
+		log.error("Unexpected error occured on loading file /config/rating.properties. Loading unsuccessful.", ex1);
+	    } catch (IOException ex1)
+	    {
+		log.error("Unexpected error occured on loading file /config/rating.properties. Loading unsuccessful.", ex1);
+	    } finally
+	    {
+		if (hin != null)
+		{
+		    try
+		    {
+			hin.close();
+		    } catch (IOException ex1)
+		    {
+			log.error("Unexpected error occured on loading file /config/rating.properties. Loading unsuccessful.", ex1);
+		    }
+		}
+	    }
+	} finally
+	{
+	    try
+	    {
+		if (in1 != null)
+		{
+		    in1.close();
+		}
+	    } catch (IOException ex)
+	    {
+		log.error("Unexpected error occured on loading file /config/rating.properties. Loading unsuccessful.", ex);
+	    }
 	}
 
 	// load the obfuscated properties from secure.properties by using the obfuscation key
-	try (InputStream in = RatingProperties.class.getResourceAsStream("/config/secure.properties"))
+	InputStream in = RatingProperties.class.getResourceAsStream(securePropertyFile);
+	try
 	{
 	    Properties obfuscatedProperties = new Properties();
 	    obfuscatedProperties.load(in);
@@ -60,9 +133,55 @@ public class RatingProperties
 	    obfuscatedProperties.replaceAll((a, b) -> helper.unobfuscateString((String) b));
 
 	    prop.putAll(obfuscatedProperties);
-	} catch (IOException ex)
+	} catch (Exception ex)
 	{
-	    log.error("Unexpected error occured on loading file /config/secure.properties. Loading unsuccessful.", ex);
+	    InputStream hin = null;
+	    try
+	    {
+		hin = new FileInputStream(securePropertyFile);
+		Properties obfuscatedProperties = new Properties();
+		obfuscatedProperties.load(hin);
+
+		obfuscatedProperties.replaceAll((a, b) -> helper.unobfuscateString((String) b));
+
+		prop.putAll(obfuscatedProperties);
+	    } catch (FileNotFoundException ex1)
+	    {
+		log.error("Unexpected error occured on loading file /config/rating.properties. Loading unsuccessful.", ex);
+	    } catch (IOException ex1)
+	    {
+		log.error("Unexpected error occured on loading file /config/rating.properties. Loading unsuccessful.", ex);
+	    } finally
+	    {
+		if (hin != null)
+		{
+		    try
+		    {
+			hin.close();
+		    } catch (IOException ex1)
+		    {
+			log.error("Unexpected error occured on loading file /config/rating.properties. Loading unsuccessful.", ex1);
+		    }
+		}
+	    }
+	} finally
+	{
+	    try
+	    {
+		if (in1 != null)
+		{
+		    in1.close();
+		}
+	    } catch (IOException ex)
+	    {
+		log.error("Unexpected error occured on loading file /config/rating.properties. Loading unsuccessful.", ex);
+	    }
+	}
+
+	log.info("Imported Properties: ");
+	for (Object key : prop.keySet())
+	{
+	    log.info(key + ": " + prop.get(key));
 	}
     }
 
