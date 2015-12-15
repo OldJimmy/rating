@@ -11,6 +11,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import de.loercher.rating.commons.DateTimeConverter;
 import de.loercher.rating.commons.RatingProperties;
 import de.loercher.rating.commons.exception.ArticleResourceNotFoundException;
 import de.loercher.rating.commons.exception.GeneralRatingException;
@@ -18,6 +20,7 @@ import de.loercher.rating.commons.exception.UserResourceNotFoundException;
 import de.loercher.rating.feedback.dto.CopyrightPostDTO;
 import de.loercher.rating.feedback.dto.ObscenePostDTO;
 import de.loercher.rating.feedback.dto.ObsoletePostDTO;
+import de.loercher.rating.feedback.dto.OpenFeedbackDTO;
 import de.loercher.rating.feedback.dto.PositivePostDTO;
 import de.loercher.rating.feedback.dto.WrongPostDTO;
 import java.sql.Timestamp;
@@ -33,6 +36,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -93,17 +97,17 @@ public class FeedbackController
 		.withConsistentRead(false);
 
 	PaginatedQueryList<FeedbackEntryDataModel> list;
-	
+
 	try
 	{
-	   list = mapper.query(FeedbackEntryDataModel.class, queryExpression);
+	    list = mapper.query(FeedbackEntryDataModel.class, queryExpression);
 	} catch (Exception e)
 	{
 	    GeneralRatingException ex = new GeneralRatingException("Unexpected exception occurred by loading DB-entries of FeedbackEntry from user " + userID + ".", e);
 	    log.error(ex.getLoggingString(), e);
 	    throw ex;
 	}
-	
+
 	list.loadAllResults();
 
 	Map<String, Object> result = new LinkedHashMap<>();
@@ -122,6 +126,48 @@ public class FeedbackController
 	}
 
 	result.put("entries", entries);
+
+	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/feedback", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public synchronized ResponseEntity<String> openFeedback(@RequestBody OpenFeedbackDTO request, @RequestHeader HttpHeaders headers) throws GeneralRatingException, JsonProcessingException
+    {
+	String userID = headers.get("UserID").get(0);
+	ZonedDateTime releaseTime = new DateTimeConverter().unmarshall(ZonedDateTime.class, request.getRelease());
+
+	FeedbackDataModel entry = new FeedbackDataModel(releaseTime);
+
+	String articleID = null;
+	try
+	{
+	    mapper.save(entry);
+
+	    articleID = entry.getArticleID();
+	} catch (AmazonServiceException e)
+	{
+	    GeneralRatingException ex = new GeneralRatingException("Creating a new FeedbackDataModel entry failed.", e);
+	    log.error(ex.getError(), e);
+
+	    throw ex;
+	}
+
+	FeedbackEntryDataModel entryModel = new FeedbackEntryDataModel(releaseTime, articleID, userID);
+
+	try
+	{
+	    mapper.save(entryModel);
+	} catch (AmazonServiceException e)
+	{
+	    mapper.delete(entry);
+	    
+	    GeneralRatingException ex = new GeneralRatingException("Creating a new FeedbackEntryDataModel entry failed.", e);
+	    log.error(ex.getError(), e);
+
+	    throw ex;
+	}
+
+	Map<String, Object> result = generateResultMap(articleID, userID);
 
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
     }
@@ -250,7 +296,7 @@ public class FeedbackController
 	{
 	    GeneralRatingException ex = new GeneralRatingException("Updating conditionally FeedbackEntry failed after " + MAX_ATTEMPTS + " attempts. UserID: " + userID + ", ArticleID: " + articleID + ".", e);
 	    log.error(ex.getError(), e);
-	    
+
 	    throw ex;
 	}
     }
