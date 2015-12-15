@@ -13,7 +13,9 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.ReturnValue;
+import de.loercher.rating.commons.DateTimeConverter;
 import de.loercher.rating.commons.exception.GeneralRatingException;
+import java.time.ZonedDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +52,8 @@ public class AtomicUpdate
 	    Item item = table.getItem(FeedbackDataModel.KEY_NAME, articleId);
 	    if (item == null)
 	    {
+		ZonedDateTime now = ZonedDateTime.now();
+		
 		item = new Item()
 			.withPrimaryKey(FeedbackDataModel.KEY_NAME, articleId)
 			.withNumber(FeedbackDataModel.POSITIVE_COUNTER_NAME, 0)
@@ -57,6 +61,7 @@ public class AtomicUpdate
 			.withNumber(FeedbackDataModel.OBSCENE_COUNTER_NAME, 0)
 			.withNumber(FeedbackDataModel.OBSOLETE_COUNTER_NAME, 0)
 			.withNumber(FeedbackDataModel.WRONG_PLACE_COUNTER_NAME, 0)
+			.withString(FeedbackDataModel.TIME_OF_PRESS_ENTRY_NAME, new DateTimeConverter().marshall(now))
 			.withNumber(FeedbackDataModel.WRONG_CATEGORY_COUNTER_NAME, 0)
 			.withNumber(FeedbackDataModel.WRONG_COUNTER_NAME, 0)
 			.withNumber(FeedbackDataModel.SIZE_NAME, 0);

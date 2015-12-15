@@ -29,6 +29,8 @@ public class FeedbackDataModel
     public static final String WRONG_CATEGORY_COUNTER_NAME = "wrongCategoryCounter";
     public static final String WRONG_PLACE_COUNTER_NAME = "wrongPlaceCounter";
     
+    public static final String TIME_OF_PRESS_ENTRY_NAME = "timeOfPressEntry";
+    
     public static final String SIZE_NAME = "size";
 
     private String articleID;
