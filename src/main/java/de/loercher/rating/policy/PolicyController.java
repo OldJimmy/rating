@@ -9,6 +9,7 @@ import de.loercher.rating.commons.exception.InappropriateContentException;
 import de.loercher.rating.commons.exception.ArticleResourceNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.loercher.rating.commons.DateTimeConverter;
 import de.loercher.rating.feedback.FeedbackController;
 import de.loercher.rating.feedback.FeedbackDataModel;
 import java.time.Duration;
@@ -18,10 +19,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PolicyController
 {
 
-     private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /*
      Example calculation: in 72 hours (3 days) the rating goes down 50% with the following parameters:
@@ -60,22 +63,37 @@ public class PolicyController
 	mapper = pMapper;
     }
 
-    @RequestMapping(value = "/{articleId}/rating", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getRating(@PathVariable String articleId) throws JsonProcessingException, ArticleResourceNotFoundException, InappropriateContentException
+    @RequestMapping(value = "/{articleID}/rating", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getRating(@PathVariable String articleID, @RequestHeader HttpHeaders headers) throws JsonProcessingException, ArticleResourceNotFoundException, InappropriateContentException
     {
 	Map<String, Object> result = new HashMap<>();
-	result.put("articleID", articleId);
-	Double rating = calculateRating(articleId);
+	result.put("articleID", articleID);
+	
+	ZonedDateTime referenceTime = null;
+	if (headers.containsKey("Time"))
+	{
+	    referenceTime = new DateTimeConverter().unmarshall(ZonedDateTime.class, headers.get("time").get(0));
+	}
+	
+	FeedbackDataModel model = feedback.getFeedback(articleID);
+	
+	Double rating = calculateRating(model, referenceTime);
 
+	result.put("release", new DateTimeConverter().marshall(model.getTimeOfPressEntry()));
 	result.put("appropriate", true);
 	result.put("rating", rating);
 
 	return new ResponseEntity<>(mapper.writeValueAsString(result), HttpStatus.OK);
     }
-
-    public Double calculateRating(String articleID) throws InappropriateContentException, ArticleResourceNotFoundException
+    
+    public Double calculateRating(FeedbackDataModel model) throws InappropriateContentException, ArticleResourceNotFoundException
     {
-	FeedbackDataModel model = feedback.getFeedback(articleID);
+	return calculateRating(model, null);
+    }
+
+    public Double calculateRating(FeedbackDataModel model, ZonedDateTime currentTime) throws InappropriateContentException, ArticleResourceNotFoundException
+    {
+	String articleID = model.getArticleID();
 	if (model == null)
 	{
 	    throw new ArticleResourceNotFoundException(articleID, "Entry with the articleId " + articleID + " not existing!");
@@ -86,7 +104,10 @@ public class PolicyController
 	    throw new InappropriateContentException(articleID, "Entry not appropriate to display: " + articleID);
 	}
 
-	ZonedDateTime currentTime = ZonedDateTime.now();
+	if (currentTime == null)
+	{
+	    currentTime = ZonedDateTime.now();
+	}
 
 	Duration timeDifference = Duration.between(model.getTimeOfPressEntry(), currentTime);
 
@@ -106,7 +127,7 @@ public class PolicyController
 
 	return effectivePositive * factor;
     }
-
+    
     private boolean isLegit(FeedbackDataModel model)
     {
 	Integer entryCount = model.getSize();

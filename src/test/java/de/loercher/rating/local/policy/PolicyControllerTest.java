@@ -38,6 +38,7 @@ public class PolicyControllerTest
 	policy = new PolicyController(feedback, new ObjectMapper());
 	dummy = new FeedbackDataModel(DBITest.articleId, now);
 	when(feedback.getFeedback(DBITest.articleId)).thenReturn(dummy);
+	
     }
 
     @Test
@@ -45,10 +46,10 @@ public class PolicyControllerTest
     {
 	dummy.setPositiveCounter(10);
 
-	Double firstRating = policy.calculateRating(DBITest.articleId);
+	Double firstRating = policy.calculateRating(dummy);
 	dummy.setTimeOfPressEntry(now.minusDays(1));
 
-	assertTrue("Older Entry should be lower rated than newer one!", firstRating > policy.calculateRating(DBITest.articleId));
+	assertTrue("Older Entry should be lower rated than newer one!", firstRating > policy.calculateRating(dummy));
     }
 
     @Test
@@ -59,7 +60,7 @@ public class PolicyControllerTest
 
 	try
 	{
-	    policy.calculateRating(DBITest.articleId);
+	    policy.calculateRating(dummy);
 	    fail("Such a high obscene counter has to result in an InappropriateContentException!");
 	} catch (InappropriateContentException i)
 	{
@@ -68,7 +69,7 @@ public class PolicyControllerTest
 	dummy.setObsceneCounter(0);
 	try
 	{
-	    policy.calculateRating(DBITest.articleId);
+	    policy.calculateRating(dummy);
 	} catch (InappropriateContentException i)
 	{
 	    fail("Obscene counter should be back to normal!");
@@ -78,7 +79,7 @@ public class PolicyControllerTest
 
 	try
 	{
-	    policy.calculateRating(DBITest.articleId);
+	    policy.calculateRating(dummy);
 	    fail("Such a high obsolete counter has to result in an InappropriateContentException!");
 	} catch (InappropriateContentException i)
 	{
@@ -87,7 +88,7 @@ public class PolicyControllerTest
 	dummy.setObsoleteCounter(0);
 	try
 	{
-	    policy.calculateRating(DBITest.articleId);
+	    policy.calculateRating(dummy);
 	} catch (InappropriateContentException i)
 	{
 	    fail("Obsolete counter should be back to normal!");
@@ -97,7 +98,7 @@ public class PolicyControllerTest
 
 	try
 	{
-	    policy.calculateRating(DBITest.articleId);
+	    policy.calculateRating(dummy);
 	    fail("Such a high copyright counter has to result in an InappropriateContentException!");
 	} catch (InappropriateContentException i)
 	{
@@ -109,10 +110,10 @@ public class PolicyControllerTest
     {
 	dummy.setPositiveCounter(2);
 
-	Double firstRating = policy.calculateRating(DBITest.articleId);
+	Double firstRating = policy.calculateRating(dummy);
 
 	dummy.setPositiveCounter(3);
-	Double secondRating = policy.calculateRating(DBITest.articleId);
+	Double secondRating = policy.calculateRating(dummy);
 
 	assertTrue("Adding a positive feedback should result in higher rating!", secondRating > firstRating);
 	assertTrue("First Rating should be near to 2.0!", isSimilar(firstRating, 2.0));
@@ -125,7 +126,7 @@ public class PolicyControllerTest
     {
 	dummy.setPositiveCounter(0);
 
-	Double firstRating = policy.calculateRating(articleID);
+	Double firstRating = policy.calculateRating(dummy);
 	assertTrue("Rating should be roundabout 0.0!", isSimilar(firstRating, 0.0));
     }
 
@@ -135,16 +136,16 @@ public class PolicyControllerTest
 	dummy.setSize(10);
 	dummy.setWrongCounter(5);
 
-	Double firstRating = policy.calculateRating(articleID);
+	Double firstRating = policy.calculateRating(dummy);
 	assertTrue("Rating should be less than 0!", firstRating < 0);
 	
 	dummy.setWrongCounter(0);
 	dummy.setPositiveCounter(20);
 	
-	firstRating = policy.calculateRating(articleID);
+	firstRating = policy.calculateRating(dummy);
 	
 	dummy.setWrongCounter(1);
-	assertTrue("Rating should be less with an additional wrong flag!", policy.calculateRating(articleID) < firstRating);
+	assertTrue("Rating should be less with an additional wrong flag!", policy.calculateRating(dummy) < firstRating);
     }
 
     private boolean isSimilar(Double a, Double b)
