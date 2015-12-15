@@ -76,6 +76,10 @@ public class PolicyController
 	}
 	
 	FeedbackDataModel model = feedback.getFeedback(articleID);
+	if (model == null)
+	{
+	    throw new ArticleResourceNotFoundException(articleID, "Entry with the articleId " + articleID + " not existing!");
+	}
 	
 	Double rating = calculateRating(model, referenceTime);
 
@@ -94,10 +98,6 @@ public class PolicyController
     public Double calculateRating(FeedbackDataModel model, ZonedDateTime currentTime) throws InappropriateContentException, ArticleResourceNotFoundException
     {
 	String articleID = model.getArticleID();
-	if (model == null)
-	{
-	    throw new ArticleResourceNotFoundException(articleID, "Entry with the articleId " + articleID + " not existing!");
-	}
 
 	if (!isLegit(model))
 	{
