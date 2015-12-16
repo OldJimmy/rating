@@ -136,6 +136,7 @@ public class FeedbackController
 	ZonedDateTime releaseTime = new DateTimeConverter().unmarshall(ZonedDateTime.class, request.getRelease());
 
 	FeedbackDataModel entry = new FeedbackDataModel(releaseTime);
+	entry.setPositiveCounter(1);
 
 	String articleID = null;
 	try
@@ -152,7 +153,7 @@ public class FeedbackController
 	}
 
 	FeedbackEntryDataModel entryModel = new FeedbackEntryDataModel(releaseTime, articleID, userID);
-	entry.setPositiveCounter(1);
+	entryModel.setPositive();
 	
 	try
 	{
