@@ -11,7 +11,6 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import de.loercher.rating.commons.DateTimeConverter;
 import de.loercher.rating.commons.RatingProperties;
 import de.loercher.rating.commons.exception.ArticleResourceNotFoundException;
@@ -153,7 +152,8 @@ public class FeedbackController
 	}
 
 	FeedbackEntryDataModel entryModel = new FeedbackEntryDataModel(releaseTime, articleID, userID);
-
+	entry.setPositiveCounter(1);
+	
 	try
 	{
 	    mapper.save(entryModel);
