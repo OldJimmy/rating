@@ -168,9 +168,9 @@ public class FeedbackController
 	    throw ex;
 	}
 
-	Map<String, Object> result = generateResultMap(articleID, userID);
+	Map<String, Object> result = generateResultMap(articleID, userID, HttpStatus.CREATED.toString());
 
-	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
+	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/{articleID}/feedback/{userID}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -208,7 +208,7 @@ public class FeedbackController
 	AtomicUpdate update = factory.createAtomicUpdate("positiveCounter", "size");
 	addFlag(articleID, userID, positive.isPositive(), update, (a) -> a.isPositive(), (c, b) -> c.setPositive(b));
 
-	Map<String, Object> result = generateResultMap(articleID, userID);
+	Map<String, Object> result = generateResultMap(articleID, userID, HttpStatus.CREATED.toString());
 
 	result.put("positive", positive.isPositive());
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
@@ -220,7 +220,7 @@ public class FeedbackController
 	AtomicUpdate update = factory.createAtomicUpdate(FeedbackDataModel.OBSOLETE_COUNTER_NAME, FeedbackDataModel.SIZE_NAME);
 	addFlag(articleID, userID, obsolete.isObsolete(), update, (a) -> a.isObsolete(), (c, b) -> c.setObsolete(b));
 
-	Map<String, Object> result = generateResultMap(articleID, userID);
+	Map<String, Object> result = generateResultMap(articleID, userID, HttpStatus.CREATED.toString());
 
 	result.put("obsolete", obsolete.isObsolete());
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
@@ -232,7 +232,7 @@ public class FeedbackController
 	AtomicUpdate update = factory.createAtomicUpdate(FeedbackDataModel.OBSCENE_COUNTER_NAME, FeedbackDataModel.SIZE_NAME);
 	addFlag(articleID, userID, obscene.isObscene(), update, (a) -> a.isObscene(), (c, b) -> c.setObscene(b));
 
-	Map<String, Object> result = generateResultMap(articleID, userID);
+	Map<String, Object> result = generateResultMap(articleID, userID, HttpStatus.CREATED.toString());
 
 	result.put("obscene", obscene.isObscene());
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
@@ -244,7 +244,7 @@ public class FeedbackController
 	AtomicUpdate update = factory.createAtomicUpdate(FeedbackDataModel.COPYRIGHT_COUNTER_NAME, FeedbackDataModel.SIZE_NAME);
 	addFlag(articleID, userID, copyright.isCopyright(), update, (a) -> a.isCopyright(), (c, b) -> c.setCopyright(b));
 
-	Map<String, Object> result = generateResultMap(articleID, userID);
+	Map<String, Object> result = generateResultMap(articleID, userID, HttpStatus.CREATED.toString());
 
 	result.put("copyright", copyright.isCopyright());
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
@@ -256,7 +256,7 @@ public class FeedbackController
 	AtomicUpdate update = factory.createAtomicUpdate(FeedbackDataModel.WRONG_COUNTER_NAME, FeedbackDataModel.SIZE_NAME);
 	addFlag(articleID, userID, wrong.isWrong(), update, (a) -> a.isWrong(), (c, b) -> c.setWrong(b));
 
-	Map<String, Object> result = generateResultMap(articleID, userID);
+	Map<String, Object> result = generateResultMap(articleID, userID, HttpStatus.CREATED.toString());
 
 	result.put("wrong", wrong.isWrong());
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
@@ -302,7 +302,7 @@ public class FeedbackController
 	}
     }
 
-    private Map<String, Object> generateResultMap(String articleID, String userID)
+    private Map<String, Object> generateResultMap(String articleID, String userID, String status)
     {
 	Map<String, Object> result = new LinkedHashMap<>();
 	result.put("articleID", articleID);
@@ -310,7 +310,7 @@ public class FeedbackController
 
 	Timestamp now = new Timestamp(new Date().getTime());
 	result.put("timestamp", now);
-	result.put("status", 200);
+	result.put("status", status);
 
 	String url = baseurl + articleID + "/feedback/" + userID;
 	result.put("feedbackURL", url);
