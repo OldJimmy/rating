@@ -85,6 +85,7 @@ public class PolicyController
 
 	result.put("release", new DateTimeConverter().marshall(model.getTimeOfPressEntry()));
 	result.put("appropriate", true);
+	result.put("positives", model.getPositiveCounter());
 	result.put("rating", rating);
 
 	return new ResponseEntity<>(mapper.writeValueAsString(result), HttpStatus.OK);
