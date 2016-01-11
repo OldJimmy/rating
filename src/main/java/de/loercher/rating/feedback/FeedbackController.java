@@ -94,8 +94,8 @@ public class FeedbackController
 	    throw new IllegalArgumentException("There has to be set a header carrying the userid.");
 	}
 	
-	String newURL = baseurl + articleID + "/feedback/" + userID;
-	System.out.println(newURL);
+	String newURL = articleID + "/feedback/" + userID;
+//	System.out.println(newURL);
 	
 	UriComponentsBuilder builder = UriComponentsBuilder.fromPath(newURL);
 	
