@@ -15,6 +15,7 @@ import de.loercher.rating.commons.DateTimeConverter;
 import de.loercher.rating.commons.RatingProperties;
 import de.loercher.rating.commons.exception.ArticleResourceNotFoundException;
 import de.loercher.rating.commons.exception.GeneralRatingException;
+import de.loercher.rating.commons.exception.RequiredHeaderFieldNotAvailableException;
 import de.loercher.rating.commons.exception.UserResourceNotFoundException;
 import de.loercher.rating.feedback.dto.CopyrightPostDTO;
 import de.loercher.rating.feedback.dto.ObscenePostDTO;
@@ -87,12 +88,12 @@ public class FeedbackController
     }
     
     @RequestMapping(value = "{articleID}/feedback", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> redirectGetFeedback(@PathVariable String articleID, @RequestHeader HttpHeaders headers) throws JsonProcessingException, UserResourceNotFoundException, GeneralRatingException
+    public ResponseEntity<String> redirectGetFeedback(@PathVariable String articleID, @RequestHeader HttpHeaders headers) throws JsonProcessingException, UserResourceNotFoundException, GeneralRatingException, RequiredHeaderFieldNotAvailableException
     {
 	String userID = headers.getFirst("UserID");
 	if (userID == null)
 	{
-	    throw new IllegalArgumentException("There has to be set a header carrying the userid.");
+	    throw new RequiredHeaderFieldNotAvailableException(articleID, "There has to be set a header carrying the userid: 'UserID' ");
 	}
 	
 	String newURL = baseurl + articleID + "/feedback/" + userID;
