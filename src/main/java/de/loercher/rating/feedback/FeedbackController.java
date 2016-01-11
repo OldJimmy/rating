@@ -232,7 +232,7 @@ public class FeedbackController
 	String url = baseurl + articleID + "/feedback/";
 
 	result.put("feedback", model.toMap());
-	result.put("self", url);
+	result.put("self", url + userID);
 	result.put("obsoleteVote", url + "obsolete");
 	result.put("obsceneVote", url + "obscene");
 	result.put("wrongVote", url + "wrong");
