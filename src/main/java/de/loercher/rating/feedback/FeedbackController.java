@@ -225,6 +225,8 @@ public class FeedbackController
 	    model = new FeedbackEntryDataModel();
 	    model.setArticleID(articleID);
 	    model.setUserID(userID);
+	    
+	    model.setReleaseDate(ZonedDateTime.now());
 	}
 	
 	String url = baseurl + articleID + "/feedback/";
