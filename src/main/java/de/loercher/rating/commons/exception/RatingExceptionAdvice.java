@@ -84,6 +84,19 @@ public class RatingExceptionAdvice
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(value = RequiredHeaderFieldNotAvailableException.class)
+    public ResponseEntity<String> inappropriateContentErrorHandler(HttpServletRequest req, RequiredHeaderFieldNotAvailableException e) throws Exception
+    {
+	String articleID = e.getArticleID();
+	log.warn("No userID carried inside HTTP-header!", e);
+
+	Map<String, Object> result = new LinkedHashMap<>();
+	result.put("articleID", articleID);
+	result.put("path", req.getRequestURI());
+
+	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
+    }
+
     @ExceptionHandler(value = InappropriateContentException.class)
     public ResponseEntity<String> inappropriateContentErrorHandler(HttpServletRequest req, InappropriateContentException e) throws Exception
     {
