@@ -22,6 +22,7 @@ import de.loercher.rating.feedback.dto.ObsoletePostDTO;
 import de.loercher.rating.feedback.dto.OpenFeedbackDTO;
 import de.loercher.rating.feedback.dto.PositivePostDTO;
 import de.loercher.rating.feedback.dto.WrongPostDTO;
+import java.net.URI;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -100,10 +101,12 @@ public class FeedbackController
 	UriComponentsBuilder builder = UriComponentsBuilder.fromPath(newURL);
 	
 	Map<String, Object> result = generateResultMap(articleID, userID, HttpStatus.SEE_OTHER.toString());
-	result.put("message", "See other: " + newURL);
+	
+	URI redirectURI = builder.build().toUri();
+	result.put("message", "See other: " + redirectURI.toString());
 	
 	HttpHeaders responseHeaders = new HttpHeaders();
-	responseHeaders.setLocation(builder.build().toUri());
+	responseHeaders.setLocation(redirectURI);
 	
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), responseHeaders, HttpStatus.SEE_OTHER);
     }
