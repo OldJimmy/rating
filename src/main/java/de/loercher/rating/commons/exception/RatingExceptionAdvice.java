@@ -85,7 +85,7 @@ public class RatingExceptionAdvice
     }
 
     @ExceptionHandler(value = RequiredHeaderFieldNotAvailableException.class)
-    public ResponseEntity<String> inappropriateContentErrorHandler(HttpServletRequest req, RequiredHeaderFieldNotAvailableException e) throws Exception
+    public ResponseEntity<String> requiredHeaderFieldNotAvailableErrorHandler(HttpServletRequest req, RequiredHeaderFieldNotAvailableException e) throws Exception
     {
 	String articleID = e.getArticleID();
 	log.warn("No userID carried inside HTTP-header!", e);
@@ -107,6 +107,7 @@ public class RatingExceptionAdvice
 	result.put("articleID", articleID);
 	result.put("appropriate", false);
 	result.put("path", req.getRequestURI());
+	result.put("release", e.getRelease());
 
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
     }
