@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  *
@@ -82,6 +83,29 @@ public class FeedbackController
     public FeedbackDataModel getFeedback(String articleID)
     {
 	return mapper.load(FeedbackDataModel.class, articleID);
+    }
+    
+    @RequestMapping(value = "{articleID}/feedback", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> redirectGetFeedback(@PathVariable String articleID, @RequestHeader HttpHeaders headers) throws JsonProcessingException, UserResourceNotFoundException, GeneralRatingException
+    {
+	String userID = headers.getFirst("UserID");
+	if (userID == null)
+	{
+	    throw new IllegalArgumentException("There has to be set a header carrying the userid.");
+	}
+	
+	String newURL = baseurl + articleID + "/feedback/" + userID;
+	System.out.println(newURL);
+	
+	UriComponentsBuilder builder = UriComponentsBuilder.fromPath(newURL);
+	
+	Map<String, Object> result = generateResultMap(articleID, userID, HttpStatus.SEE_OTHER.toString());
+	result.put("message", "See other: " + newURL);
+	
+	HttpHeaders responseHeaders = new HttpHeaders();
+	responseHeaders.setLocation(builder.build().toUri());
+	
+	return new ResponseEntity<>(objectMapper.writeValueAsString(result), responseHeaders, HttpStatus.SEE_OTHER);
     }
 
     @RequestMapping(value = "/feedback/{userID}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -312,8 +336,8 @@ public class FeedbackController
 	result.put("timestamp", now);
 	result.put("status", status);
 
-	String url = baseurl + articleID + "/feedback/" + userID;
-	result.put("feedbackURL", url);
+	String url = baseurl + articleID + "/feedback/";
+	result.put("feedback", url);
 	return result;
     }
 }
