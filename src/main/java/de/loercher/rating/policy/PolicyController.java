@@ -102,7 +102,7 @@ public class PolicyController
 
 	if (!isLegit(model))
 	{
-	    throw new InappropriateContentException(articleID, "Entry not appropriate to display: " + articleID);
+	    throw new InappropriateContentException(articleID, "Entry not appropriate to display: " + articleID, model.getTimeOfPressEntry());
 	}
 
 	if (currentTime == null)

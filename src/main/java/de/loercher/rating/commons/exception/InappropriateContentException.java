@@ -5,6 +5,8 @@
  */
 package de.loercher.rating.commons.exception;
 
+import java.time.ZonedDateTime;
+
 /**
  *
  * @author Jimmy
@@ -12,8 +14,16 @@ package de.loercher.rating.commons.exception;
 
 public class InappropriateContentException extends ArticleResourceNotFoundException
 {
-    public InappropriateContentException(String pArticleID, String pError)
+    private final ZonedDateTime release;
+    
+    public InappropriateContentException(String pArticleID, String pError, ZonedDateTime pRelease)
     {
 	super(pArticleID, pError);
+	release = pRelease;
+    }
+
+    public ZonedDateTime getRelease()
+    {
+	return release;
     }
 }
