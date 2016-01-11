@@ -17,6 +17,7 @@ package de.loercher.rating.commons.exception;
 
 import com.amazonaws.services.simpleworkflow.model.UnknownResourceException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.loercher.rating.commons.DateTimeConverter;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -107,7 +108,7 @@ public class RatingExceptionAdvice
 	result.put("articleID", articleID);
 	result.put("appropriate", false);
 	result.put("path", req.getRequestURI());
-	result.put("release", e.getRelease());
+	result.put("release", new DateTimeConverter().marshall(e.getRelease()));
 
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
     }
