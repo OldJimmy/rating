@@ -97,7 +97,6 @@ public class FeedbackController
 	}
 
 	String newURL = baseurl + articleID + "/feedback/" + userID;
-	System.out.println(newURL);
 
 	UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(newURL);
 
