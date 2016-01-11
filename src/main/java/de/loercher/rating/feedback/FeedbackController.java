@@ -86,7 +86,7 @@ public class FeedbackController
     {
 	return mapper.load(FeedbackDataModel.class, articleID);
     }
-    
+
     @RequestMapping(value = "{articleID}/feedback", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> redirectGetFeedback(@PathVariable String articleID, @RequestHeader HttpHeaders headers) throws JsonProcessingException, UserResourceNotFoundException, GeneralRatingException, RequiredHeaderFieldNotAvailableException
     {
@@ -95,20 +95,20 @@ public class FeedbackController
 	{
 	    throw new RequiredHeaderFieldNotAvailableException(articleID, "There has to be set a header carrying the userid: 'UserID' ");
 	}
-	
+
 	String newURL = baseurl + articleID + "/feedback/" + userID;
 	System.out.println(newURL);
-	
+
 	UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(newURL);
-	
+
 	Map<String, Object> result = generateResultMap(articleID, userID, HttpStatus.SEE_OTHER.toString());
-	
+
 	URI redirectURI = builder.build().toUri();
 	result.put("message", "See other: " + redirectURI.toString());
-	
+
 	HttpHeaders responseHeaders = new HttpHeaders();
 	responseHeaders.setLocation(redirectURI);
-	
+
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), responseHeaders, HttpStatus.SEE_OTHER);
     }
 
@@ -182,14 +182,14 @@ public class FeedbackController
 
 	FeedbackEntryDataModel entryModel = new FeedbackEntryDataModel(releaseTime, articleID, userID);
 	entryModel.setPositive();
-	
+
 	try
 	{
 	    mapper.save(entryModel);
 	} catch (AmazonServiceException e)
 	{
 	    mapper.delete(entry);
-	    
+
 	    GeneralRatingException ex = new GeneralRatingException("Creating a new FeedbackEntryDataModel entry failed.", e);
 	    log.error(ex.getError(), e);
 
@@ -222,10 +222,19 @@ public class FeedbackController
 
 	if (model == null)
 	{
-	    throw new ArticleResourceNotFoundException(articleID, "FeedbackEntry with articleID " + articleID + " for user " + userID + "not found.");
+	    model = new FeedbackEntryDataModel();
+	    model.setArticleID(articleID);
+	    model.setUserID(userID);
 	}
+	
+	String url = baseurl + articleID + "/feedback/";
 
 	result.put("feedback", model.toMap());
+	result.put("self", url);
+	result.put("obsoleteVote", url + "obsolete");
+	result.put("obsceneVote", url + "obscene");
+	result.put("wrongVote", url + "wrong");
+	result.put("positiveVote", url + "positive");
 
 	return new ResponseEntity<>(objectMapper.writeValueAsString(result), HttpStatus.OK);
     }
